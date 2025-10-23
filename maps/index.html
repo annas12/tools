@@ -1,1 +1,447 @@
-heelo word
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pencari Bisnis - Google Places API</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>body{box-sizing:border-box}</style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-full">
+  <main class="container mx-auto px-4 py-8">
+    <!-- Header -->
+    <header class="text-center mb-8">
+      <h1 class="text-4xl font-bold text-gray-800 mb-2">🔍 Pencari Bisnis</h1>
+      <p class="text-gray-600">Temukan nama toko dan nomor telepon dengan mudah</p>
+    </header>
+
+    <!-- Search Form -->
+    <div class="max-w-2xl mx-auto mb-8">
+      <form id="searchForm" class="bg-white rounded-lg shadow-lg p-6">
+        <div class="mb-4">
+          <label for="keyword" class="block text-sm font-medium text-gray-700 mb-2">Kata Kunci Pencarian</label>
+          <input
+            type="text"
+            id="keyword"
+            name="keyword"
+            placeholder="Contoh: aquarium jogja"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+            required
+          />
+        </div>
+
+        <div class="mb-6">
+          <label for="location" class="block text-sm font-medium text-gray-700 mb-2">Lokasi (Opsional)</label>
+          <input
+            type="text"
+            id="location"
+            name="location"
+            placeholder="Contoh: Yogyakarta"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+          />
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <button
+            type="submit"
+            id="searchBtn"
+            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center"
+          >
+            <span id="searchText">🔍 Cari Bisnis</span>
+            <span id="loadingText" class="hidden">⏳ Mencari...</span>
+          </button>
+
+          <button
+            type="button"
+            id="refreshBtn"
+            class="w-full bg-slate-600 hover:bg-slate-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200"
+            title="Bypass cache lokal & Worker (ambil data baru)"
+          >
+            🔄 Muat Ulang (Bypass Cache)
+          </button>
+
+          <button
+            type="button"
+            id="exportBtn"
+            class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
+            disabled
+          >
+            ⬇️ Unduh CSV
+          </button>
+        </div>
+
+        <p class="mt-3 text-sm text-gray-500">
+          Hasil akan di-cache lokal selama <span id="ttlLabel">60</span> menit untuk menghemat kuota API.
+        </p>
+      </form>
+    </div>
+
+    <!-- Results Section -->
+    <div id="resultsSection" class="hidden">
+      <div class="max-w-4xl mx-auto">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 gap-2">
+          <h2 class="text-2xl font-bold text-gray-800">Hasil Pencarian</h2>
+          <div class="flex items-center gap-2">
+            <span id="cacheBadge" class="hidden text-xs px-2 py-1 rounded-full bg-yellow-100 text-yellow-800">Diambil dari cache lokal</span>
+            <div id="resultCount" class="text-gray-600"></div>
+          </div>
+        </div>
+        <div id="queryMeta" class="text-sm text-gray-500 mb-4"></div>
+        <div id="resultsList" class="space-y-4"></div>
+      </div>
+    </div>
+
+    <!-- Error Message -->
+    <div id="errorMessage" class="hidden max-w-2xl mx-auto">
+      <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+        <div class="flex items-center">
+          <span class="text-red-500 text-xl mr-3">⚠️</span>
+          <div>
+            <h3 class="text-red-800 font-semibold">Terjadi Kesalahan</h3>
+            <p id="errorText" class="text-red-600 mt-1"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Instructions -->
+    <div class="max-w-2xl mx-auto mt-12 bg-white rounded-lg shadow-lg p-6">
+      <h3 class="text-lg font-semibold text-gray-800 mb-4">📋 Cara Penggunaan</h3>
+      <ol class="list-decimal list-inside space-y-2 text-gray-600">
+        <li>Masukkan kata kunci pencarian (contoh: "aquarium jogja").</li>
+        <li>Tambahkan lokasi agar hasil lebih spesifik (opsional).</li>
+        <li>Klik "Cari Bisnis" (gunakan cache) atau "Muat Ulang" (bypass cache).</li>
+        <li>Gunakan tombol "Unduh CSV" untuk menyimpan hasil.</li>
+      </ol>
+    </div>
+  </main>
+
+  <script>
+    // =========================
+    // Konfigurasi
+    // =========================
+    const WORKER_URL = 'https://scrap-maps.annasmashuri97.workers.dev/search'; // ← URL Worker kamu
+    const CACHE_TTL_MS = 60 * 60 * 1000; // 60 menit (cache lokal)
+    const STORAGE_PREFIX = 'maps-cache-v1:'; // prefix localStorage
+    document.getElementById('ttlLabel').textContent = Math.round(CACHE_TTL_MS / 60000);
+
+    // =========================
+    // Element bindings
+    // =========================
+    const searchForm   = document.getElementById('searchForm');
+    const searchBtn    = document.getElementById('searchBtn');
+    const refreshBtn   = document.getElementById('refreshBtn');
+    const exportBtn    = document.getElementById('exportBtn');
+    const searchText   = document.getElementById('searchText');
+    const loadingText  = document.getElementById('loadingText');
+    const resultsSection = document.getElementById('resultsSection');
+    const resultsList  = document.getElementById('resultsList');
+    const resultCount  = document.getElementById('resultCount');
+    const errorMessage = document.getElementById('errorMessage');
+    const errorText    = document.getElementById('errorText');
+    const cacheBadge   = document.getElementById('cacheBadge');
+    const queryMeta    = document.getElementById('queryMeta');
+
+    let lastResults = [];
+    let lastQuery = { keyword: '', location: '' };
+
+    // =========================
+    // Event Listeners
+    // =========================
+    searchForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      runSearch({ bypassCache: false });
+    });
+
+    refreshBtn.addEventListener('click', () => {
+      runSearch({ bypassCache: true });
+    });
+
+    exportBtn.addEventListener('click', () => {
+      if (!lastResults.length) return;
+      const csv = toCSV(lastResults, lastQuery);
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const ts = new Date().toISOString().replace(/[:.]/g, '-');
+      a.href = url;
+      a.download = `hasil-pencarian-${sanitizeFilePart(lastQuery.keyword)}-${sanitizeFilePart(lastQuery.location||'all')}-${ts}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
+
+    // =========================
+    // Core search flow
+    // =========================
+    async function runSearch({ bypassCache }) {
+      hideError();
+      hideResults();
+      setLoadingState(true);
+
+      const keyword = document.getElementById('keyword').value.trim();
+      const location = document.getElementById('location').value.trim();
+
+      if (!keyword) {
+        showError('Mohon masukkan kata kunci pencarian');
+        setLoadingState(false);
+        return;
+      }
+
+      lastQuery = { keyword, location };
+
+      try {
+        const cacheKey = makeCacheKey(keyword, location);
+        const now = Date.now();
+
+        if (!bypassCache) {
+          const cached = readCache(cacheKey);
+          if (cached && (now - cached.timestamp) < CACHE_TTL_MS) {
+            displayResults(cached.results, { fromCache: true, keyword, location, timestamp: cached.timestamp });
+            setLoadingState(false);
+            return;
+          }
+        }
+
+        // Build URL (bypass cache Worker jika refresh)
+        const url = new URL(WORKER_URL);
+        if (bypassCache) url.searchParams.set('refresh', '1');
+
+        const response = await fetch(url.toString(), {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(bypassCache ? { 'x-bypass-cache': '1' } : {})
+          },
+          body: JSON.stringify({ query: keyword, location: location || undefined })
+        });
+
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+        const data = await response.json();
+        if (data.error) throw new Error(data.error);
+
+        const results = data.results || [];
+
+        // Simpan ke cache lokal
+        writeCache(cacheKey, { timestamp: Date.now(), results });
+
+        displayResults(results, { fromCache: false, keyword, location, timestamp: Date.now() });
+
+      } catch (err) {
+        console.error('Search error:', err);
+        showError(err.message || 'Terjadi kesalahan saat mencari data');
+      } finally {
+        setLoadingState(false);
+      }
+    }
+
+    // =========================
+    // UI helpers
+    // =========================
+    function setLoadingState(loading) {
+      if (loading) {
+        searchBtn.disabled = true;
+        refreshBtn.disabled = true;
+        exportBtn.disabled = true;
+        searchText.classList.add('hidden');
+        loadingText.classList.remove('hidden');
+        searchBtn.classList.add('opacity-75');
+      } else {
+        searchBtn.disabled = false;
+        refreshBtn.disabled = false;
+        exportBtn.disabled = lastResults.length === 0;
+        searchText.classList.remove('hidden');
+        loadingText.classList.add('hidden');
+        searchBtn.classList.remove('opacity-75');
+      }
+    }
+
+    function displayResults(results, meta) {
+      lastResults = results;
+      exportBtn.disabled = results.length === 0;
+
+      if (!results.length) {
+        showError(`Tidak ditemukan hasil untuk "${meta.keyword}"`);
+        return;
+      }
+
+      resultCount.textContent = `Ditemukan ${results.length} hasil`;
+      cacheBadge.classList.toggle('hidden', !meta.fromCache);
+
+      const ts = new Date(meta.timestamp);
+      queryMeta.textContent = `Kueri: "${meta.keyword}"${meta.location ? ` di "${meta.location}"` : ''} • Diambil: ${formatDate(ts)}${meta.fromCache ? ' (cache)' : ''}`;
+
+      resultsList.innerHTML = '';
+      results.forEach((place, idx) => {
+        const card = createResultCard(place, idx + 1);
+        resultsList.appendChild(card);
+      });
+
+      resultsSection.classList.remove('hidden');
+    }
+
+    function createResultCard(place, index) {
+      const card = document.createElement('div');
+      card.className = 'bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-200';
+
+      const phone = place.phone || 'Tidak tersedia';
+      const address = place.address || 'Alamat tidak tersedia';
+      const rating = place.rating ? `⭐ ${place.rating}` : '';
+      const website = place.website;
+
+      card.innerHTML = `
+        <div class="flex justify-between items-start mb-4">
+          <div class="flex-1">
+            <div class="flex items-center mb-2">
+              <span class="bg-blue-100 text-blue-800 text-sm font-semibold px-2 py-1 rounded-full mr-3">${index}</span>
+              <h3 class="text-xl font-bold text-gray-800">${escapeHtml(place.name || 'Tanpa Nama')}</h3>
+            </div>
+            ${rating ? `<div class="text-sm text-gray-600 mb-2">${rating}</div>` : ''}
+          </div>
+        </div>
+
+        <div class="space-y-3">
+          <div class="flex items-center">
+            <span class="text-green-600 text-lg mr-3">📞</span>
+            <div>
+              <span class="font-semibold text-gray-700">Telepon:</span>
+              <span class="ml-2 text-gray-800">${escapeHtml(phone)}</span>
+              ${phone !== 'Tidak tersedia' ? `
+                <button onclick="copyToClipboard('${jsStringEscape(phone)}')" class="ml-2 text-blue-600 hover:text-blue-800 text-sm underline">Salin</button>
+              ` : ''}
+            </div>
+          </div>
+
+          <div class="flex items-start">
+            <span class="text-blue-600 text-lg mr-3 mt-1">📍</span>
+            <div>
+              <span class="font-semibold text-gray-700">Alamat:</span>
+              <span class="ml-2 text-gray-800">${escapeHtml(address)}</span>
+            </div>
+          </div>
+
+          ${website ? `
+            <div class="flex items-center">
+              <span class="text-purple-600 text-lg mr-3">🌐</span>
+              <div>
+                <span class="font-semibold text-gray-700">Website:</span>
+                <a href="${escapeAttr(website)}" target="_blank" rel="noopener noreferrer" class="ml-2 text-blue-600 hover:text-blue-800 underline">Kunjungi Website</a>
+              </div>
+            </div>
+          ` : ''}
+
+          ${place.place_id ? `
+            <div class="flex items-center text-xs text-gray-400">
+              <span class="mr-2">place_id:</span><code class="bg-gray-50 px-1 py-0.5 rounded">${escapeHtml(place.place_id)}</code>
+            </div>
+          ` : ''}
+        </div>
+      `;
+      return card;
+    }
+
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        const toast = document.createElement('div');
+        toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+        toast.textContent = 'Nomor telepon disalin!';
+        document.body.appendChild(toast);
+        setTimeout(() => document.body.removeChild(toast), 1800);
+      }).catch(() => {
+        showError('Gagal menyalin nomor telepon');
+      });
+    }
+
+    function showError(message) {
+      errorText.textContent = message;
+      errorMessage.classList.remove('hidden');
+    }
+    function hideError() { errorMessage.classList.add('hidden'); }
+    function hideResults() { resultsSection.classList.add('hidden'); }
+
+    // =========================
+    // Cache helpers (localStorage)
+    // =========================
+    function makeCacheKey(keyword, location) {
+      const k = keyword.toLowerCase().replace(/\s+/g, ' ').trim();
+      const l = (location || '').toLowerCase().replace(/\s+/g, ' ').trim();
+      return `${STORAGE_PREFIX}${k}::${l}`;
+    }
+    function readCache(key) {
+      try {
+        const raw = localStorage.getItem(key);
+        return raw ? JSON.parse(raw) : null;
+      } catch { return null; }
+    }
+    function writeCache(key, value) {
+      try {
+        localStorage.setItem(key, JSON.stringify(value));
+      } catch {}
+    }
+
+    // =========================
+    // CSV helpers
+    // =========================
+    function toCSV(rows, meta) {
+      const header = ['name','phone','address','rating','website','place_id','query','location','exported_at'];
+      const exportedAt = new Date().toISOString();
+      const lines = [header.join(',')];
+
+      rows.forEach(r => {
+        const line = [
+          csvCell(r.name),
+          csvCell(r.phone),
+          csvCell(r.address),
+          csvCell(r.rating),
+          csvCell(r.website),
+          csvCell(r.place_id),
+          csvCell(meta.keyword),
+          csvCell(meta.location || ''),
+          csvCell(exportedAt)
+        ].join(',');
+        lines.push(line);
+      });
+      return lines.join('\n');
+    }
+    function csvCell(val) {
+      if (val === null || val === undefined) return '';
+      const s = String(val);
+      return `"${s.replace(/"/g, '""')}"`; // escape " → ""
+    }
+    function sanitizeFilePart(s) {
+      return String(s || '')
+        .toLowerCase()
+        .replace(/\s+/g, '-')
+        .replace(/[^a-z0-9-_]/g, '')
+        .slice(0, 40) || 'all';
+    }
+
+    // =========================
+    // Utils
+    // =========================
+    function formatDate(d) {
+      const opts = { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' };
+      return new Intl.DateTimeFormat('id-ID', opts).format(d);
+    }
+    function escapeHtml(s='') {
+      return String(s)
+        .replaceAll('&','&amp;')
+        .replaceAll('<','&lt;')
+        .replaceAll('>','&gt;')
+        .replaceAll('"','&quot;')
+        .replaceAll("'",'&#039;');
+    }
+    function escapeAttr(s='') {
+      const v = String(s).trim();
+      if (!/^https?:\/\//i.test(v)) return '#';
+      return v.replace(/"/g, '%22');
+    }
+    function jsStringEscape(s='') {
+      return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    }
+  </script>
+</body>
+</html>
+
