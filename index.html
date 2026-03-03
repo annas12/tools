@@ -93,6 +93,41 @@
       </div>
     </div>
 
+
+    <!-- Keyword Controls -->
+    <div id="keywordControls" class="bg-dark-card rounded-xl border border-dark-border p-6 mb-8 hidden">
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+        <div class="md:col-span-2">
+          <label class="block text-sm font-medium text-gray-300 mb-2">Keyword</label>
+          <input type="text" id="keywordInput" placeholder="contoh: minecraft, resep ayam, ai tools" class="w-full bg-dark-bg border border-dark-border rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-youtube focus:border-transparent">
+          <p class="text-xs text-gray-500 mt-1">Cari video yang sedang kuat performanya untuk keyword tertentu</p>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-300 mb-2">Region</label>
+          <select id="keywordRegionSelect" class="w-full bg-dark-bg border border-dark-border rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-youtube focus:border-transparent">
+            <option value="ID">🇮🇩 Indonesia</option><option value="US">🇺🇸 United States</option>
+            <option value="JP">🇯🇵 Japan</option><option value="KR">🇰🇷 South Korea</option>
+            <option value="GB">🇬🇧 United Kingdom</option><option value="IN">🇮🇳 India</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-300 mb-2">Rentang Waktu</label>
+          <select id="keywordTimeSelect" class="w-full bg-dark-bg border border-dark-border rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-youtube focus:border-transparent">
+            <option value="3">3 hari terakhir</option>
+            <option value="7" selected>7 hari terakhir</option>
+            <option value="14">14 hari terakhir</option>
+            <option value="30">30 hari terakhir</option>
+          </select>
+        </div>
+        <div>
+          <button id="analyzeKeywordBtn" class="w-full bg-youtube hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center space-x-2 disabled:bg-gray-600 disabled:cursor-not-allowed">
+            <span id="keywordText">Analisa Keyword</span>
+            <div id="keywordSpinner" class="loading-spinner hidden"></div>
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Trending Controls -->
     <div id="trendingControls" class="bg-dark-card rounded-xl border border-dark-border p-6 mb-8">
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
