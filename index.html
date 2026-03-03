@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>YouTube Research Tool - Trending & Keyword Analysis</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5156172278330264" crossorigin="anonymous"></script>
   <script>
     tailwind.config = {
       darkMode: 'class',
@@ -24,6 +25,7 @@
     @keyframes spin { 0%{transform:rotate(0)}100%{transform:rotate(360deg)} }
     .card-hover{transition:all .3s ease}
     .card-hover:hover{transform:translateY(-4px);box-shadow:0 20px 25px -5px rgba(0,0,0,.3)}
+    .native-ad-label{letter-spacing:.08em;text-transform:uppercase}
   </style>
 </head>
 <body class="h-full bg-dark-bg text-white font-sans">
@@ -87,41 +89,6 @@
         <div>
           <button id="analyzeKeywordBtn" class="w-full bg-youtube hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center space-x-2 disabled:bg-gray-600 disabled:cursor-not-allowed">
             <span id="keywordText">Analyze Keyword</span>
-            <div id="keywordSpinner" class="loading-spinner hidden"></div>
-          </button>
-        </div>
-      </div>
-    </div>
-
-
-    <!-- Keyword Controls -->
-    <div id="keywordControls" class="bg-dark-card rounded-xl border border-dark-border p-6 mb-8 hidden">
-      <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
-        <div class="md:col-span-2">
-          <label class="block text-sm font-medium text-gray-300 mb-2">Keyword</label>
-          <input type="text" id="keywordInput" placeholder="contoh: minecraft, resep ayam, ai tools" class="w-full bg-dark-bg border border-dark-border rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-youtube focus:border-transparent">
-          <p class="text-xs text-gray-500 mt-1">Cari video yang sedang kuat performanya untuk keyword tertentu</p>
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-300 mb-2">Region</label>
-          <select id="keywordRegionSelect" class="w-full bg-dark-bg border border-dark-border rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-youtube focus:border-transparent">
-            <option value="ID">🇮🇩 Indonesia</option><option value="US">🇺🇸 United States</option>
-            <option value="JP">🇯🇵 Japan</option><option value="KR">🇰🇷 South Korea</option>
-            <option value="GB">🇬🇧 United Kingdom</option><option value="IN">🇮🇳 India</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-300 mb-2">Rentang Waktu</label>
-          <select id="keywordTimeSelect" class="w-full bg-dark-bg border border-dark-border rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-youtube focus:border-transparent">
-            <option value="3">3 hari terakhir</option>
-            <option value="7" selected>7 hari terakhir</option>
-            <option value="14">14 hari terakhir</option>
-            <option value="30">30 hari terakhir</option>
-          </select>
-        </div>
-        <div>
-          <button id="analyzeKeywordBtn" class="w-full bg-youtube hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center space-x-2 disabled:bg-gray-600 disabled:cursor-not-allowed">
-            <span id="keywordText">Analisa Keyword</span>
             <div id="keywordSpinner" class="loading-spinner hidden"></div>
           </button>
         </div>
@@ -336,6 +303,8 @@
   const channelCreated = document.getElementById('channelCreated');
 
   const API_BASE = 'https://yt-proxy-worker.annasmashuri97.workers.dev';
+  const NATIVE_AD_CLIENT = 'ca-pub-5156172278330264';
+  const NATIVE_AD_SLOT = '0000000000'; // Replace with your web AdSense native/in-feed slot ID
   let currentMode = 'trending';
 
   // ====== Utils ======
@@ -458,6 +427,31 @@
     return true;
   }
 
+  function createNativeAdCard(index){
+    return `
+      <div class="bg-dark-card border border-dark-border rounded-xl overflow-hidden p-4 md:col-span-2 lg:col-span-1 xl:col-span-2">
+        <div class="native-ad-label text-[10px] text-gray-500 mb-2">Sponsored</div>
+        <ins class="adsbygoogle block"
+             data-ad-client="${NATIVE_AD_CLIENT}"
+             data-ad-slot="${NATIVE_AD_SLOT}"
+             data-ad-format="fluid"
+             data-ad-layout-key="-6t+ed+2i-1n-4w"
+             style="display:block;min-height:140px"></ins>
+      </div>
+    `;
+  }
+
+  function hydrateNativeAds(){
+    if(!window.adsbygoogle) return;
+    const slots = document.querySelectorAll('ins.adsbygoogle:not([data-ads-init="1"])');
+    slots.forEach((slot)=>{
+      try{
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+        slot.setAttribute('data-ads-init','1');
+      }catch(_){ }
+    });
+  }
+
   function createVideoCard(video, index, isChannelMode=false){
     const videoId = getVideoId(video);
     const views = parseInt(video?.statistics?.viewCount||'0',10);
@@ -523,8 +517,18 @@
   function displayResults(videos, mode='trending'){
     if(!videos||!videos.length){ emptyState.classList.remove('hidden'); resultsContainer.classList.add('hidden'); return; }
     emptyState.classList.add('hidden'); resultsContainer.classList.remove('hidden'); resultsCount.textContent=videos.length;
-    document.querySelector('#resultsContainer h2').textContent = mode==='channel' ? 'Video Channel' : (mode==='keyword' ? 'Trending by Keyword' : 'Video Trending');
-    videoGrid.innerHTML = videos.map((v,i)=>createVideoCard(v,i,mode==='channel')).join('');
+    document.querySelector('#resultsContainer h2').textContent = mode==='channel' ? 'Channel Videos' : (mode==='keyword' ? 'Trending by Keyword' : 'Trending Videos');
+
+    const adFrequency = 6;
+    const rendered = [];
+    videos.forEach((v,i)=>{
+      rendered.push(createVideoCard(v,i,mode==='channel'));
+      if((i+1)%adFrequency===0){
+        rendered.push(createNativeAdCard(i));
+      }
+    });
+    videoGrid.innerHTML = rendered.join('');
+    requestAnimationFrame(hydrateNativeAds);
   }
 
   function openYouTubeVideo(videoId, canEmbed=true){
