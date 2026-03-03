@@ -307,8 +307,6 @@
   const channelIdText = document.getElementById('channelIdText');
 
   const API_BASE = 'https://yt-proxy-worker.annasmashuri97.workers.dev';
-  const NATIVE_AD_CLIENT = 'ca-pub-5156172278330264';
-  const NATIVE_AD_SLOT = '0000000000'; // Replace with your web AdSense native/in-feed slot ID
   let currentMode = 'trending';
 
   // ====== Utils ======
@@ -431,30 +429,6 @@
     return true;
   }
 
-  function createNativeAdCard(index){
-    return `
-      <div class="bg-dark-card border border-dark-border rounded-xl overflow-hidden p-4 md:col-span-2 lg:col-span-1 xl:col-span-2">
-        <div class="native-ad-label text-[10px] text-gray-500 mb-2">Sponsored</div>
-        <ins class="adsbygoogle block"
-             data-ad-client="${NATIVE_AD_CLIENT}"
-             data-ad-slot="${NATIVE_AD_SLOT}"
-             data-ad-format="fluid"
-             data-ad-layout-key="-6t+ed+2i-1n-4w"
-             style="display:block;min-height:140px"></ins>
-      </div>
-    `;
-  }
-
-  function hydrateNativeAds(){
-    if(!window.adsbygoogle) return;
-    const slots = document.querySelectorAll('ins.adsbygoogle:not([data-ads-init="1"])');
-    slots.forEach((slot)=>{
-      try{
-        (window.adsbygoogle = window.adsbygoogle || []).push({});
-        slot.setAttribute('data-ads-init','1');
-      }catch(_){ }
-    });
-  }
 
   function createVideoCard(video, index, isChannelMode=false){
     const videoId = getVideoId(video);
@@ -468,7 +442,7 @@
     return `
       <div class="bg-dark-card border border-dark-border rounded-xl overflow-hidden card-hover">
         <div class="relative">
-          <img src="${video?.snippet?.thumbnails?.medium?.url||''}" alt="${video?.snippet?.title||''}" class="w-full h-48 object-cover" onerror="this.src='';this.alt='Thumbnail gagal dimuat';this.style.display='none';">
+          <img src="${video?.snippet?.thumbnails?.medium?.url||''}" alt="${video?.snippet?.title||''}" class="w-full h-48 object-cover" onerror="this.src='';this.alt='Thumbnail failed to load';this.style.display='none';">
           <div class="absolute top-2 left-2 ${isChannelMode?'bg-blue-600':'bg-youtube'} text-white text-xs font-bold px-2 py-1 rounded">${isChannelMode?`Video ${index+1}`:`#${index+1}`}</div>
           <div class="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">${formatDate(video?.snippet?.publishedAt)}</div>
         </div>
@@ -530,16 +504,7 @@
     emptyState.classList.add('hidden'); resultsContainer.classList.remove('hidden'); resultsCount.textContent=videos.length;
     document.querySelector('#resultsContainer h2').textContent = mode==='channel' ? 'Channel Videos' : (mode==='keyword' ? 'Trending by Keyword' : 'Trending Videos');
 
-    const adFrequency = 6;
-    const rendered = [];
-    videos.forEach((v,i)=>{
-      rendered.push(createVideoCard(v,i,mode==='channel'));
-      if((i+1)%adFrequency===0){
-        rendered.push(createNativeAdCard(i));
-      }
-    });
-    videoGrid.innerHTML = rendered.join('');
-    requestAnimationFrame(hydrateNativeAds);
+    videoGrid.innerHTML = videos.map((v,i)=>createVideoCard(v,i,mode==='channel')).join('');
   }
 
   function analyzeVideoChannel(channelId){
@@ -584,6 +549,39 @@
     return null;
   }
 
+  async function fetchChannelMeta(channelId){
+    const endpoints = [
+      '/api/channel-meta',
+      '/api/channel-info',
+      '/api/channel/details',
+      '/api/channels'
+    ];
+    for(const endpoint of endpoints){
+      try{
+        const d = await apiFetch(endpoint, { channelId, id: channelId });
+        if(d.channel) return d.channel;
+        if(d.item) return d.item;
+        if(d.items && d.items.length) return d.items[0];
+      }catch(_){ /* try next */ }
+    }
+    return null;
+  }
+
+  function buildChannelFallback(channelId, videos=[]){
+    const first = videos[0] || {};
+    const sn = first.snippet || {};
+    return {
+      id: channelId,
+      snippet: {
+        title: sn.channelTitle || 'Unknown Channel',
+        description: 'Channel metadata is unavailable from current worker response.',
+        publishedAt: sn.publishedAt || new Date().toISOString(),
+        thumbnails: sn.thumbnails || {}
+      },
+      statistics: {}
+    };
+  }
+
   async function analyzeChannel(){
     const channelUrl = channelUrlInput.value.trim();
     const maxChannelResults = parseInt(channelMaxResults.value,10);
@@ -606,11 +604,11 @@
       const embeddableItems = videos.filter(v=>isEmbeddable(v,null));
       if(!embeddableItems.length) throw new Error('No channel videos are embeddable or they are restricted.');
 
-      if(payload.channel){
-        displayChannelInfo(payload.channel);
-      } else {
-        channelInfo.classList.add('hidden');
+      let channelMeta = payload.channel || payload.channelInfo || payload.channelDetails || null;
+      if(!channelMeta){
+        channelMeta = await fetchChannelMeta(channelId);
       }
+      displayChannelInfo(channelMeta || buildChannelFallback(channelId, videos));
       displayResults(embeddableItems,'channel');
       showMessage('success',`Successfully analyzed channel with ${embeddableItems.length} videos.`);
     }catch(err){
