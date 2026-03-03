@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="id" class="h-full">
+<html lang="en" class="h-full">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>YouTube Research Tool - Analisis Video Trending</title>
+  <title>YouTube Research Tool - Trending & Keyword Analysis</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -40,7 +40,7 @@
           </div>
           <div>
             <h1 class="text-2xl font-bold text-white">YouTube Research Tool</h1>
-            <p class="text-gray-400 text-sm">Analisis video trending & estimasi pendapatan</p>
+            <p class="text-gray-400 text-sm">Trending video, channel, and keyword analysis</p>
           </div>
         </div>
       </div>
@@ -49,60 +49,47 @@
 
   <!-- Main -->
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <!-- API Key -->
-    <div id="apiKeySection" class="bg-dark-card rounded-xl border border-dark-border p-6 mb-6">
-      <div class="flex items-center justify-between mb-4">
-        <div class="flex items-center space-x-3">
-          <svg class="w-5 h-5 text-youtube" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M18 8a6 6 0 01-7.743 5.743L10 14l-1 1-1 1H6v2H2v-4l4.257-4.257A6 6 0 1118 8zm-6-4a1 1 0 100 2 2 2 0 012 2 1 1 0 102 0 4 4 0 00-4-4z" clip-rule="evenodd"/>
-          </svg>
-          <h3 class="text-lg font-semibold text-white">YouTube API Key</h3>
-          <div id="apiKeyStatus" class="hidden">
-            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-900/50 text-green-300 border border-green-500/50">✓ Tersimpan</span>
-          </div>
-        </div>
-        <button id="toggleApiSection" class="text-gray-400 hover:text-white transition-colors duration-200">
-          <svg id="hideIcon" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
-          </svg>
-          <svg id="showIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-          </svg>
-        </button>
-      </div>
-      <div id="apiKeyContent">
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 items-end">
-          <div class="lg:col-span-2">
-            <label class="block text-sm font-medium text-gray-300 mb-2">Masukkan YouTube Data API v3 Key Anda</label>
-            <input type="password" id="apiKeyInput" placeholder="AIzaSyC-..." class="w-full bg-dark-bg border border-dark-border rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-youtube focus:border-transparent">
-            <p class="text-xs text-gray-500 mt-1">API key disimpan lokal di browser Anda dan tidak dikirim ke server manapun</p>
-          </div>
-          <div>
-            <button id="toggleApiKey" class="w-full bg-gray-700 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 text-sm">👁️ Tampilkan</button>
-          </div>
-        </div>
-        <div class="mt-4 p-3 bg-blue-900/30 border border-blue-500/50 rounded-lg">
-          <div class="flex items-start space-x-2">
-            <svg class="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
-            </svg>
-            <div class="text-xs text-blue-200">
-              <strong>Cara mendapatkan API Key:</strong><br>
-              1. Buka <a href="https://console.cloud.google.com/" target="_blank" class="text-blue-400 hover:underline">Google Cloud Console</a><br>
-              2. Buat project baru → APIs & Services → Library<br>
-              3. Cari "YouTube Data API v3" → Enable<br>
-              4. Credentials → Create Credentials → API Key
-            </div>
-          </div>
-        </div>
+    <!-- Tabs -->
+    <div class="bg-dark-card rounded-xl border border-dark-border p-6 mb-6">
+      <div class="flex flex-col sm:flex-row space-y-1 sm:space-y-0 sm:space-x-1 bg-dark-bg rounded-lg p-1">
+        <button id="trendingTab" class="flex-1 py-2 px-4 text-sm font-medium rounded-md transition-colors duration-200 bg-youtube text-white">🔥 Video Trending</button>
+        <button id="keywordTab" class="flex-1 py-2 px-4 text-sm font-medium rounded-md transition-colors duration-200 text-gray-400 hover:text-white">🔎 Trending Keyword</button>
+        <button id="channelTab" class="flex-1 py-2 px-4 text-sm font-medium rounded-md transition-colors duration-200 text-gray-400 hover:text-white">📺 Channel Analysis</button>
       </div>
     </div>
 
-    <!-- Tabs -->
-    <div class="bg-dark-card rounded-xl border border-dark-border p-6 mb-6">
-      <div class="flex space-x-1 bg-dark-bg rounded-lg p-1">
-        <button id="trendingTab" class="flex-1 py-2 px-4 text-sm font-medium rounded-md transition-colors duration-200 bg-youtube text-white">🔥 Video Trending</button>
-        <button id="channelTab" class="flex-1 py-2 px-4 text-sm font-medium rounded-md transition-colors duration-200 text-gray-400 hover:text-white">📺 Analisis Channel</button>
+
+    <!-- Keyword Controls -->
+    <div id="keywordControls" class="bg-dark-card rounded-xl border border-dark-border p-6 mb-8 hidden">
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+        <div class="md:col-span-2">
+          <label class="block text-sm font-medium text-gray-300 mb-2">Keyword</label>
+          <input type="text" id="keywordInput" placeholder="example: minecraft, chicken recipe, ai tools" class="w-full bg-dark-bg border border-dark-border rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-youtube focus:border-transparent">
+          <p class="text-xs text-gray-500 mt-1">Find videos currently performing well for a specific keyword</p>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-300 mb-2">Region</label>
+          <select id="keywordRegionSelect" class="w-full bg-dark-bg border border-dark-border rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-youtube focus:border-transparent">
+            <option value="ID">🇮🇩 Indonesia</option><option value="US">🇺🇸 United States</option>
+            <option value="JP">🇯🇵 Japan</option><option value="KR">🇰🇷 South Korea</option>
+            <option value="GB">🇬🇧 United Kingdom</option><option value="IN">🇮🇳 India</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-300 mb-2">Time Range</label>
+          <select id="keywordTimeSelect" class="w-full bg-dark-bg border border-dark-border rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-youtube focus:border-transparent">
+            <option value="3">Last 3 days</option>
+            <option value="7" selected>Last 7 days</option>
+            <option value="14">Last 14 days</option>
+            <option value="30">Last 30 days</option>
+          </select>
+        </div>
+        <div>
+          <button id="analyzeKeywordBtn" class="w-full bg-youtube hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center space-x-2 disabled:bg-gray-600 disabled:cursor-not-allowed">
+            <span id="keywordText">Analyze Keyword</span>
+            <div id="keywordSpinner" class="loading-spinner hidden"></div>
+          </button>
+        </div>
       </div>
     </div>
 
@@ -125,7 +112,7 @@
         <div>
           <label class="block text-sm font-medium text-gray-300 mb-2">Kategori</label>
           <select id="categorySelect" class="w-full bg-dark-bg border border-dark-border rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-youtube focus:border-transparent">
-            <option value="">Semua Kategori</option>
+            <option value="">All Categories</option>
             <option value="1">Film & Animation</option><option value="2">Autos & Vehicles</option>
             <option value="10">Music</option><option value="15">Pets & Animals</option>
             <option value="17">Sports</option><option value="19">Travel & Events</option>
@@ -136,17 +123,17 @@
           </select>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-300 mb-2">Jumlah Video</label>
+          <label class="block text-sm font-medium text-gray-300 mb-2">Video Count</label>
           <select id="maxResults" class="w-full bg-dark-bg border border-dark-border rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-youtube focus:border-transparent">
-            <option value="10">10 Video</option>
-            <option value="20" selected>20 Video</option>
-            <option value="30">30 Video</option>
-            <option value="50">50 Video</option>
+            <option value="10">10 Videos</option>
+            <option value="20" selected>20 Videos</option>
+            <option value="30">30 Videos</option>
+            <option value="50">50 Videos</option>
           </select>
         </div>
         <div>
           <button id="searchBtn" class="w-full bg-youtube hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center space-x-2 disabled:bg-gray-600 disabled:cursor-not-allowed">
-            <span id="searchText">Cari Trending</span>
+            <span id="searchText">Find Trending</span>
             <div id="loadingSpinner" class="loading-spinner hidden"></div>
           </button>
         </div>
@@ -157,20 +144,20 @@
     <div id="channelControls" class="bg-dark-card rounded-xl border border-dark-border p-6 mb-8 hidden">
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
         <div class="md:col-span-2">
-          <label class="block text-sm font-medium text-gray-300 mb-2">URL Channel YouTube</label>
-          <input type="text" id="channelUrlInput" placeholder="https://www.youtube.com/@channelname atau https://www.youtube.com/channel/UCxxxxx" class="w-full bg-dark-bg border border-dark-border rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-youtube focus:border-transparent">
-          <p class="text-xs text-gray-500 mt-1">Masukkan URL channel YouTube (format @username atau channel ID)</p>
+          <label class="block text-sm font-medium text-gray-300 mb-2">YouTube Channel URL</label>
+          <input type="text" id="channelUrlInput" placeholder="https://www.youtube.com/@channelname or https://www.youtube.com/channel/UCxxxxx" class="w-full bg-dark-bg border border-dark-border rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-youtube focus:border-transparent">
+          <p class="text-xs text-gray-500 mt-1">Enter YouTube channel URL (@username or channel ID format)</p>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-300 mb-2">Jumlah Video</label>
+          <label class="block text-sm font-medium text-gray-300 mb-2">Video Count</label>
           <select id="channelMaxResults" class="w-full bg-dark-bg border border-dark-border rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-youtube focus:border-transparent">
-            <option value="10">10 Video</option><option value="20" selected>20 Video</option>
-            <option value="30">30 Video</option><option value="50">50 Video</option>
+            <option value="10">10 Videos</option><option value="20" selected>20 Videos</option>
+            <option value="30">30 Videos</option><option value="50">50 Videos</option>
           </select>
         </div>
         <div>
           <button id="analyzeChannelBtn" class="w-full bg-youtube hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center space-x-2 disabled:bg-gray-600 disabled:cursor-not-allowed">
-            <span id="analyzeText">Analisis Channel</span>
+            <span id="analyzeText">Analyze Channel</span>
             <div id="analyzeSpinner" class="loading-spinner hidden"></div>
           </button>
         </div>
@@ -181,7 +168,7 @@
             <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
           </svg>
           <div class="text-xs text-orange-200">
-            <strong>Format URL yang didukung:</strong><br>
+            <strong>Supported URL formats:</strong><br>
             • https://www.youtube.com/@channelname<br>
             • https://www.youtube.com/channel/UCxxxxx<br>
             • https://www.youtube.com/c/channelname<br>
@@ -215,11 +202,13 @@
           <div class="flex-1">
             <h3 id="channelTitle" class="text-xl font-bold text-white mb-2"></h3>
             <p id="channelDescription" class="text-gray-400 text-sm mb-4 line-clamp-3"></p>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div class="text-center"><div id="channelSubscribers" class="text-lg font-bold text-youtube">-</div><div class="text-xs text-gray-500">Subscribers</div></div>
-              <div class="text-center"><div id="channelViews" class="text-lg font-bold text-green-400">-</div><div class="text-xs text-gray-500">Total Views</div></div>
-              <div class="text-center"><div id="channelVideos" class="text-lg font-bold text-blue-400">-</div><div class="text-xs text-gray-500">Videos</div></div>
-              <div class="text-center"><div id="channelCreated" class="text-lg font-bold text-purple-400">-</div><div class="text-xs text-gray-500">Created</div></div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              <div class="bg-dark-bg border border-dark-border rounded-lg p-3"><div class="text-xs text-gray-500">Subscribers</div><div id="channelSubscribers" class="text-xl font-bold text-white mt-1">-</div></div>
+              <div class="bg-dark-bg border border-dark-border rounded-lg p-3"><div class="text-xs text-gray-500">Total Views</div><div id="channelViews" class="text-xl font-bold text-white mt-1">-</div></div>
+              <div class="bg-dark-bg border border-dark-border rounded-lg p-3"><div class="text-xs text-gray-500">Total Videos</div><div id="channelVideos" class="text-xl font-bold text-white mt-1">-</div></div>
+              <div class="bg-dark-bg border border-dark-border rounded-lg p-3"><div class="text-xs text-gray-500">Joined</div><div id="channelCreated" class="text-xl font-bold text-white mt-1">-</div></div>
+              <div class="bg-dark-bg border border-dark-border rounded-lg p-3"><div class="text-xs text-gray-500">Country</div><div id="channelCountry" class="text-xl font-bold text-white mt-1">-</div></div>
+              <div class="bg-dark-bg border border-dark-border rounded-lg p-3"><div class="text-xs text-gray-500">Channel ID</div><div id="channelIdText" class="text-sm font-bold text-white mt-1 break-all">-</div></div>
             </div>
           </div>
         </div>
@@ -230,7 +219,7 @@
     <div id="resultsContainer" class="hidden">
       <div class="flex items-center justify-between mb-6">
         <h2 class="text-xl font-semibold text-white">Video Trending</h2>
-        <div class="text-sm text-gray-400"><span id="resultsCount">0</span> video ditemukan</div>
+        <div class="text-sm text-gray-400"><span id="resultsCount">0</span> videos found</div>
       </div>
       <div id="videoGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
     </div>
@@ -242,8 +231,8 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
         </svg>
       </div>
-      <h3 class="text-lg font-medium text-gray-300 mb-2">Belum ada data</h3>
-      <p class="text-gray-500 mb-6">Masukkan API key dan pilih region untuk melihat video trending</p>
+      <h3 class="text-lg font-medium text-gray-300 mb-2">No data yet</h3>
+      <p class="text-gray-500 mb-6">Choose an analysis mode to start researching</p>
     </div>
   </main>
 </div>
@@ -275,13 +264,6 @@
   const regionSelect = document.getElementById('regionSelect');
   const categorySelect = document.getElementById('categorySelect');
   const maxResults = document.getElementById('maxResults');
-  const apiKeyInput = document.getElementById('apiKeyInput');
-  const toggleApiKey = document.getElementById('toggleApiKey');
-  const toggleApiSection = document.getElementById('toggleApiSection');
-  const apiKeyContent = document.getElementById('apiKeyContent');
-  const apiKeyStatus = document.getElementById('apiKeyStatus');
-  const hideIcon = document.getElementById('hideIcon');
-  const showIcon = document.getElementById('showIcon');
   const statusMessage = document.getElementById('statusMessage');
   const errorMessage = document.getElementById('errorMessage');
   const successMessage = document.getElementById('successMessage');
@@ -294,8 +276,17 @@
 
   const trendingTab = document.getElementById('trendingTab');
   const channelTab = document.getElementById('channelTab');
+  const keywordTab = document.getElementById('keywordTab');
   const trendingControls = document.getElementById('trendingControls');
+  const keywordControls = document.getElementById('keywordControls');
   const channelControls = document.getElementById('channelControls');
+
+  const keywordInput = document.getElementById('keywordInput');
+  const keywordRegionSelect = document.getElementById('keywordRegionSelect');
+  const keywordTimeSelect = document.getElementById('keywordTimeSelect');
+  const analyzeKeywordBtn = document.getElementById('analyzeKeywordBtn');
+  const keywordText = document.getElementById('keywordText');
+  const keywordSpinner = document.getElementById('keywordSpinner');
 
   const channelUrlInput = document.getElementById('channelUrlInput');
   const channelMaxResults = document.getElementById('channelMaxResults');
@@ -310,8 +301,10 @@
   const channelViews = document.getElementById('channelViews');
   const channelVideos = document.getElementById('channelVideos');
   const channelCreated = document.getElementById('channelCreated');
+  const channelCountry = document.getElementById('channelCountry');
+  const channelIdText = document.getElementById('channelIdText');
 
-  const API_KEY_STORAGE = 'youtube_api_key';
+  const API_BASE = 'https://yt-proxy-worker.annasmashuri97.workers.dev';
   let currentMode = 'trending';
 
   // ====== Utils ======
@@ -327,14 +320,14 @@
   function formatDate(dateString) {
     const date = new Date(dateString), now = new Date();
     const diffDays = Math.ceil(Math.abs(now - date)/86400000);
-    if (diffDays===1) return '1 hari lalu';
-    if (diffDays<7) return `${diffDays} hari lalu`;
-    if (diffDays<30) return `${Math.floor(diffDays/7)} minggu lalu`;
-    return `${Math.floor(diffDays/30)} bulan lalu`;
+    if (diffDays===1) return '1 day ago';
+    if (diffDays<7) return `${diffDays} days ago`;
+    if (diffDays<30) return `${Math.floor(diffDays/7)} weeks ago`;
+    return `${Math.floor(diffDays/30)} months ago`;
   }
   function formatFullDate(dateString) {
     const date = new Date(dateString);
-    return date.toLocaleDateString('id-ID',{year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'Asia/Jakarta'});
+    return date.toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'});
   }
   function formatYearOnly(dateString){ return new Date(dateString).getFullYear().toString(); }
 
@@ -351,15 +344,21 @@
 
   function switchTab(mode){
     currentMode = mode;
-    if(mode==='trending'){
-      trendingTab.classList.add('bg-youtube','text-white'); trendingTab.classList.remove('text-gray-400');
-      channelTab.classList.remove('bg-youtube','text-white'); channelTab.classList.add('text-gray-400');
-      trendingControls.classList.remove('hidden'); channelControls.classList.add('hidden'); channelInfo.classList.add('hidden');
-    } else {
-      channelTab.classList.add('bg-youtube','text-white'); channelTab.classList.remove('text-gray-400');
-      trendingTab.classList.remove('bg-youtube','text-white'); trendingTab.classList.add('text-gray-400');
-      channelControls.classList.remove('hidden'); trendingControls.classList.add('hidden'); resultsContainer.classList.add('hidden'); emptyState.classList.remove('hidden');
-    }
+    const setActive = (el, active) => {
+      el.classList.toggle('bg-youtube', active);
+      el.classList.toggle('text-white', active);
+      el.classList.toggle('text-gray-400', !active);
+    };
+    setActive(trendingTab, mode==='trending');
+    setActive(keywordTab, mode==='keyword');
+    setActive(channelTab, mode==='channel');
+
+    trendingControls.classList.toggle('hidden', mode!=='trending');
+    keywordControls.classList.toggle('hidden', mode!=='keyword');
+    channelControls.classList.toggle('hidden', mode!=='channel');
+    if(mode!=='channel') channelInfo.classList.add('hidden');
+    resultsContainer.classList.add('hidden');
+    emptyState.classList.remove('hidden');
   }
 
   function extractKeywords(title, description=''){
@@ -378,19 +377,23 @@
     setTimeout(()=>statusMessage.classList.add('hidden'),5000);
   }
 
-  function setLoading(b){ searchBtn.disabled=b; searchText.textContent=b?'Mencari...':'Cari Trending'; loadingSpinner.classList.toggle('hidden',!b); }
-  function setChannelLoading(b){ analyzeChannelBtn.disabled=b; analyzeText.textContent=b?'Menganalisis...':'Analisis Channel'; analyzeSpinner.classList.toggle('hidden',!b); }
+  function setLoading(b){ searchBtn.disabled=b; searchText.textContent=b?'Searching...':'Find Trending'; loadingSpinner.classList.toggle('hidden',!b); }
+  function setChannelLoading(b){ analyzeChannelBtn.disabled=b; analyzeText.textContent=b?'Analyzing...':'Analyze Channel'; analyzeSpinner.classList.toggle('hidden',!b); }
+  function setKeywordLoading(b){ analyzeKeywordBtn.disabled=b; keywordText.textContent=b?'Analyzing...':'Analyze Keyword'; keywordSpinner.classList.toggle('hidden',!b); }
 
-  function saveApiKey(k){ localStorage.setItem(API_KEY_STORAGE,k); }
-  function loadApiKey(){ return localStorage.getItem(API_KEY_STORAGE)||''; }
-  function validateApiKey(k){ return k && k.trim().length>20 && k.startsWith('AIza'); }
-  function updateApiKeyStatus(){
-    const k=apiKeyInput.value.trim();
-    apiKeyStatus.classList.toggle('hidden',!validateApiKey(k));
-    if(validateApiKey(k)) setTimeout(()=>{ if(validateApiKey(apiKeyInput.value.trim())) hideApiKeySection(); },1000);
+  async function apiFetch(path, params={}){
+    const qs = new URLSearchParams();
+    Object.entries(params).forEach(([k,v])=>{ if(v!==undefined && v!==null && v!=='') qs.set(k, String(v)); });
+    const url = `${API_BASE}${path}${qs.toString() ? `?${qs.toString()}` : ''}`;
+    const res = await fetch(url);
+    let data = {};
+    try { data = await res.json(); } catch (_) {}
+    if(!res.ok){
+      const m = data?.error?.message || data?.message || `HTTP ${res.status}`;
+      throw new Error(m);
+    }
+    return data;
   }
-  function hideApiKeySection(){ apiKeyContent.classList.add('hidden'); hideIcon.classList.add('hidden'); showIcon.classList.remove('hidden'); }
-  function showApiKeySection(){ apiKeyContent.classList.remove('hidden'); hideIcon.classList.remove('hidden'); showIcon.classList.add('hidden'); }
 
   function calculateRPM(video){
     const categoryId = video?.snippet?.categoryId;
@@ -424,6 +427,7 @@
     return true;
   }
 
+
   function createVideoCard(video, index, isChannelMode=false){
     const videoId = getVideoId(video);
     const views = parseInt(video?.statistics?.viewCount||'0',10);
@@ -431,11 +435,12 @@
     const estimatedEarnings = (views/1000)*rpm;
     const keywords = extractKeywords(video?.snippet?.title||'', video?.snippet?.description||'');
     const canEmbed = !!(video?.status?.embeddable && video?.contentRating?.ytRating !== 'ytAgeRestricted');
+    const channelId = video?.snippet?.channelId || '';
 
     return `
       <div class="bg-dark-card border border-dark-border rounded-xl overflow-hidden card-hover">
         <div class="relative">
-          <img src="${video?.snippet?.thumbnails?.medium?.url||''}" alt="${video?.snippet?.title||''}" class="w-full h-48 object-cover" onerror="this.src='';this.alt='Thumbnail gagal dimuat';this.style.display='none';">
+          <img src="${video?.snippet?.thumbnails?.medium?.url||''}" alt="${video?.snippet?.title||''}" class="w-full h-48 object-cover" onerror="this.src='';this.alt='Thumbnail failed to load';this.style.display='none';">
           <div class="absolute top-2 left-2 ${isChannelMode?'bg-blue-600':'bg-youtube'} text-white text-xs font-bold px-2 py-1 rounded">${isChannelMode?`Video ${index+1}`:`#${index+1}`}</div>
           <div class="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">${formatDate(video?.snippet?.publishedAt)}</div>
         </div>
@@ -446,7 +451,7 @@
           <div class="bg-blue-900/30 border border-blue-500/50 rounded-lg p-2 mb-3">
             <div class="flex items-center space-x-1">
               <svg class="w-3 h-3 text-blue-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/></svg>
-              <span class="text-blue-300 text-xs font-medium">Upload:</span>
+              <span class="text-blue-300 text-xs font-medium">Uploaded:</span>
             </div>
             <p class="text-blue-200 text-xs mt-1">${formatFullDate(video?.snippet?.publishedAt)}</p>
           </div>
@@ -468,29 +473,45 @@
 
           <div class="bg-green-900/30 border border-green-500/50 rounded-lg p-3 mb-4">
             <div class="text-center">
-              <div class="text-green-400 text-xs font-medium mb-1">Estimasi Pendapatan</div>
+              <div class="text-green-400 text-xs font-medium mb-1">Estimated Revenue</div>
               <div class="text-green-300 text-lg font-bold">${formatCurrency(estimatedEarnings)}</div>
             </div>
           </div>
 
+          ${!isChannelMode && channelId ? `
+            <button onclick="analyzeVideoChannel('${channelId}')"
+                    class="mb-2 block w-full bg-blue-600 hover:bg-blue-500 text-white text-center py-2 px-4 rounded-lg transition-colors duration-200 text-sm font-medium cursor-pointer">
+              📺 Analyze This Channel
+            </button>
+          ` : ''}
           <button onclick="openYouTubeVideo('${videoId}', ${canEmbed})"
                   class="block w-full bg-youtube hover:bg-red-700 text-white text-center py-2 px-4 rounded-lg transition-colors duration-200 text-sm font-medium cursor-pointer">
-            ▶️ Tonton Video
+            ▶️ Watch Video
           </button>
           <a href="https://www.youtube.com/watch?v=${videoId}" target="_blank" rel="noopener"
              class="mt-2 block w-full text-center py-2 px-4 rounded-lg border border-dark-border hover:bg-dark-bg/60 transition-colors duration-200 text-sm">
-            🔗 Buka di YouTube
+            🔗 Open on YouTube
           </a>
         </div>
       </div>
     `;
   }
 
-  function displayResults(videos, isChannelMode=false){
+  function displayResults(videos, mode='trending'){
     if(!videos||!videos.length){ emptyState.classList.remove('hidden'); resultsContainer.classList.add('hidden'); return; }
     emptyState.classList.add('hidden'); resultsContainer.classList.remove('hidden'); resultsCount.textContent=videos.length;
-    document.querySelector('#resultsContainer h2').textContent = isChannelMode?'Video Channel':'Video Trending';
-    videoGrid.innerHTML = videos.map((v,i)=>createVideoCard(v,i,isChannelMode)).join('');
+    document.querySelector('#resultsContainer h2').textContent = mode==='channel' ? 'Channel Videos' : (mode==='keyword' ? 'Trending by Keyword' : 'Trending Videos');
+
+    videoGrid.innerHTML = videos.map((v,i)=>createVideoCard(v,i,mode==='channel')).join('');
+  }
+
+  function analyzeVideoChannel(channelId){
+    if(!channelId) return;
+    switchTab('channel');
+    channelUrlInput.value = `https://www.youtube.com/channel/${channelId}`;
+    channelControls.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    showMessage('success', 'Channel auto-filled. Starting channel analysis...');
+    analyzeChannel();
   }
 
   function openYouTubeVideo(videoId, canEmbed=true){
@@ -511,131 +532,174 @@
   }
 
   // ====== API Calls ======
-  async function getChannelIdFromUsername(username, apiKey){
-    try{
-      const r = await fetch(`https://www.googleapis.com/youtube/v3/channels?part=id&forUsername=${encodeURIComponent(username)}&key=${apiKey}`);
-      const d = await r.json();
-      if(d.items && d.items.length>0) return d.items[0].id;
-      const s = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&type=channel&q=${encodeURIComponent(username)}&key=${apiKey}`);
-      const sd = await s.json();
-      if(sd.items && sd.items.length>0) return sd.items[0].snippet.channelId;
-      return null;
-    }catch(e){ console.error(e); return null; }
+  async function getChannelIdFromUsername(username){
+    const candidates = [
+      `/api/channel-id`,
+      `/api/channel/resolve`
+    ];
+    for(const endpoint of candidates){
+      try{
+        const d = await apiFetch(endpoint, { username });
+        if(d.channelId) return d.channelId;
+        if(d.items && d.items[0]?.id) return d.items[0].id;
+      }catch(_){ /* try next endpoint */ }
+    }
+    return null;
+  }
+
+  async function fetchChannelMeta(channelId){
+    const endpoints = [
+      '/api/channel-meta',
+      '/api/channel-info',
+      '/api/channel/details',
+      '/api/channels'
+    ];
+    for(const endpoint of endpoints){
+      try{
+        const d = await apiFetch(endpoint, { channelId, id: channelId });
+        if(d.channel) return d.channel;
+        if(d.item) return d.item;
+        if(d.items && d.items.length) return d.items[0];
+      }catch(_){ /* try next */ }
+    }
+    return null;
+  }
+
+  function buildChannelFallback(channelId, videos=[]){
+    const first = videos[0] || {};
+    const sn = first.snippet || {};
+    return {
+      id: channelId,
+      snippet: {
+        title: sn.channelTitle || 'Unknown Channel',
+        description: 'Channel metadata is unavailable from current worker response.',
+        publishedAt: sn.publishedAt || new Date().toISOString(),
+        thumbnails: sn.thumbnails || {}
+      },
+      statistics: {}
+    };
   }
 
   async function analyzeChannel(){
-    const apiKey = apiKeyInput.value.trim();
     const channelUrl = channelUrlInput.value.trim();
     const maxChannelResults = parseInt(channelMaxResults.value,10);
-    if(!validateApiKey(apiKey)){ showMessage('error','API Key tidak valid.'); return; }
-    if(!channelUrl){ showMessage('error','Masukkan URL channel YouTube terlebih dahulu.'); return; }
+    if(!channelUrl){ showMessage('error','Please enter a YouTube channel URL first.'); return; }
     const channelData = extractChannelId(channelUrl);
-    if(!channelData){ showMessage('error','Format URL channel tidak valid.'); return; }
+    if(!channelData){ showMessage('error','Invalid channel URL format.'); return; }
 
     setChannelLoading(true);
     try{
       let channelId = channelData.value;
       if(channelData.type==='username'){
-        channelId = await getChannelIdFromUsername(channelData.value, apiKey);
-        if(!channelId) throw new Error('Channel tidak ditemukan. Periksa URL.');
+        channelId = await getChannelIdFromUsername(channelData.value);
+        if(!channelId) throw new Error('Channel handle could not be resolved. Add a resolve endpoint in Worker or use a /channel/UC... URL.');
       }
 
-      const ch = await fetch(`https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&id=${channelId}&key=${apiKey}`);
-      if(!ch.ok){ const ed=await ch.json(); throw new Error(ed.error?.message || `HTTP ${ch.status}`); }
-      const chInfo = await ch.json();
-      if(!chInfo.items||!chInfo.items.length) throw new Error('Channel tidak ditemukan.');
+      const payload = await apiFetch('/api/channel', { channelId, max: maxChannelResults });
+      const videos = payload.videos || payload.items || [];
+      if(!videos.length) throw new Error('No videos found in this channel.');
 
-      const list = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${channelId}&type=video&order=date&maxResults=${maxChannelResults}&key=${apiKey}`);
-      if(!list.ok){ const ed=await list.json(); throw new Error(ed.error?.message || `HTTP ${list.status}`); }
-      const listData = await list.json();
-      if(!listData.items||!listData.items.length) throw new Error('Tidak ada video ditemukan di channel ini.');
+      const embeddableItems = videos.filter(v=>isEmbeddable(v,null));
+      if(!embeddableItems.length) throw new Error('No channel videos are embeddable or they are restricted.');
 
-      const videoIds = listData.items.map(it=>it.id.videoId).filter(Boolean).join(',');
-      const stats = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics,contentDetails,status,player&id=${videoIds}&key=${apiKey}`);
-      const statsData = await stats.json();
-
-      const embeddableItems = (statsData.items||[]).filter(v=>isEmbeddable(v,null));
-      if(!embeddableItems.length) throw new Error('Video channel ini tidak ada yang mengizinkan embed / dibatasi.');
-
-      displayChannelInfo(chInfo.items[0]);
-      displayResults(embeddableItems,true);
-      showMessage('success',`Berhasil menganalisis channel dengan ${embeddableItems.length} video yang dapat di-embed`);
+      let channelMeta = payload.channel || payload.channelInfo || payload.channelDetails || null;
+      if(!channelMeta){
+        channelMeta = await fetchChannelMeta(channelId);
+      }
+      displayChannelInfo(channelMeta || buildChannelFallback(channelId, videos));
+      displayResults(embeddableItems,'channel');
+      showMessage('success',`Successfully analyzed channel with ${embeddableItems.length} videos.`);
     }catch(err){
       console.error(err);
       let m = err.message||'Error';
-      if(m.includes('API_KEY_INVALID')) m='API Key tidak valid.';
-      else if(m.includes('QUOTA_EXCEEDED')) m='Kuota API habis.';
-      else if(m.includes('ACCESS_NOT_CONFIGURED')) m='YouTube Data API v3 belum diaktifkan.';
-      showMessage('error',`Gagal menganalisis channel: ${m}`);
+      if(m.includes('QUOTA_EXCEEDED')) m='API quota is exhausted.';
+      else if(m.includes('ACCESS_NOT_CONFIGURED')) m='YouTube Data API v3 is not enabled.';
+      showMessage('error',`Failed to analyze channel: ${m}`);
       channelInfo.classList.add('hidden'); emptyState.classList.remove('hidden'); resultsContainer.classList.add('hidden');
     }finally{ setChannelLoading(false); }
   }
 
   function displayChannelInfo(channel){
-    const stats=channel.statistics||{}, sn=channel.snippet||{};
+    const stats=channel.statistics||{}, sn=channel.snippet||{}, branding=channel.brandingSettings?.channel||{};
     channelThumbnail.src = sn.thumbnails?.medium?.url || sn.thumbnails?.default?.url || '';
-    channelThumbnail.onerror=function(){ this.src=''; this.alt='Avatar gagal dimuat'; this.style.display='none'; };
+    channelThumbnail.onerror=function(){ this.src=''; this.alt='Avatar failed to load'; this.style.display='none'; };
     channelTitle.textContent = sn.title||'-';
-    channelDescription.textContent = sn.description || 'Tidak ada deskripsi';
+    channelDescription.textContent = sn.description || 'No description';
     channelSubscribers.textContent = formatNumber(parseInt(stats.subscriberCount||0,10));
     channelViews.textContent = formatNumber(parseInt(stats.viewCount||0,10));
     channelVideos.textContent = formatNumber(parseInt(stats.videoCount||0,10));
-    channelCreated.textContent = formatYearOnly(sn.publishedAt||new Date().toISOString());
+    channelCreated.textContent = formatFullDate(sn.publishedAt||new Date().toISOString());
+    channelCountry.textContent = sn.country || branding.country || '-';
+    channelIdText.textContent = channel.id || '-';
     channelInfo.classList.remove('hidden');
   }
 
   async function fetchTrendingVideos(){
-    const apiKey = apiKeyInput.value.trim();
     const region = regionSelect.value;
     const category = categorySelect.value;
     const max = parseInt(maxResults.value,10);
-    if(!validateApiKey(apiKey)){ showMessage('error','API Key tidak valid.'); return; }
-    saveApiKey(apiKey);
     setLoading(true);
     try{
-      let url = `https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics,contentDetails,status,player&chart=mostPopular&regionCode=${region}&maxResults=${max}&key=${apiKey}`;
-      if(category) url += `&videoCategoryId=${category}`;
-      const r = await fetch(url);
-      if(!r.ok){ const ed=await r.json(); throw new Error(ed.error?.message || `HTTP ${r.status}: ${r.statusText}`); }
-      const data = await r.json();
-      if(!data.items || !data.items.length) throw new Error('Tidak ada video trending untuk region ini.');
+      const data = await apiFetch('/api/trending', { region, category, max });
+      if(!data.items || !data.items.length) throw new Error('No trending videos for this region.');
 
       const embeddableItems = data.items.filter(v=>isEmbeddable(v, region));
-      if(!embeddableItems.length) throw new Error('Semua video trending saat ini diblokir untuk embed / dibatasi. Coba region/kategori lain.');
+      if(!embeddableItems.length) throw new Error('All trending videos are blocked from embedding or restricted. Try another region/category.');
 
-      displayResults(embeddableItems,false);
+      displayResults(embeddableItems,'trending');
       showMessage('success', embeddableItems.length < data.items.length
-        ? `Berhasil memuat ${embeddableItems.length}/${data.items.length} video (sebagian diblokir untuk embed).`
-        : `Berhasil memuat ${embeddableItems.length} video trending dari ${region}`);
+        ? `Loaded ${embeddableItems.length}/${data.items.length} videos (some are blocked from embedding).`
+        : `Loaded ${embeddableItems.length} trending videos from ${region}`);
     }catch(err){
       console.error(err);
       let m = err.message||'Error';
-      if(m.includes('API_KEY_INVALID')) m='API Key tidak valid.';
-      else if(m.includes('QUOTA_EXCEEDED')) m='Kuota API sudah habis.';
-      else if(m.includes('ACCESS_NOT_CONFIGURED')) m='YouTube Data API v3 belum diaktifkan.';
-      showMessage('error',`Gagal memuat data: ${m}`);
+      if(m.includes('QUOTA_EXCEEDED')) m='API quota is exhausted.';
+      else if(m.includes('ACCESS_NOT_CONFIGURED')) m='YouTube Data API v3 is not enabled.';
+      showMessage('error',`Failed to load data: ${m}`);
       emptyState.classList.remove('hidden'); resultsContainer.classList.add('hidden');
     }finally{ setLoading(false); }
+  }
+
+  async function fetchTrendingByKeyword(){
+    const keyword = keywordInput.value.trim();
+    const region = keywordRegionSelect.value;
+    const days = parseInt(keywordTimeSelect.value,10);
+    if(!keyword){ showMessage('error','Please enter a keyword first.'); return; }
+
+    setKeywordLoading(true);
+    try{
+      const data = await apiFetch('/api/keyword', { q: keyword, region, days });
+      if(!data.items || !data.items.length) throw new Error('No results for this keyword in the selected time range.');
+
+      const embeddableItems = data.items.filter(v=>isEmbeddable(v, region));
+      if(!embeddableItems.length) throw new Error('Results found, but no videos are embeddable in this region.');
+
+      displayResults(embeddableItems,'keyword');
+      showMessage('success',`Found ${embeddableItems.length} trending videos for keyword "${keyword}" in ${region}.`);
+    }catch(err){
+      console.error(err);
+      let m = err.message||'Error';
+      if(m.includes('QUOTA_EXCEEDED')) m='API quota is exhausted.';
+      else if(m.includes('ACCESS_NOT_CONFIGURED')) m='YouTube Data API v3 is not enabled.';
+      showMessage('error',`Failed keyword analysis: ${m}`);
+      emptyState.classList.remove('hidden'); resultsContainer.classList.add('hidden');
+    }finally{ setKeywordLoading(false); }
   }
 
   // ====== Events ======
   searchBtn.addEventListener('click', fetchTrendingVideos);
   analyzeChannelBtn.addEventListener('click', analyzeChannel);
+  analyzeKeywordBtn.addEventListener('click', fetchTrendingByKeyword);
   trendingTab.addEventListener('click',()=>switchTab('trending'));
+  keywordTab.addEventListener('click',()=>switchTab('keyword'));
   channelTab.addEventListener('click',()=>switchTab('channel'));
 
-  toggleApiKey.addEventListener('click',()=>{
-    if(apiKeyInput.type==='password'){ apiKeyInput.type='text'; toggleApiKey.textContent='🙈 Sembunyikan'; }
-    else { apiKeyInput.type='password'; toggleApiKey.textContent='👁️ Tampilkan'; }
-  });
-  toggleApiSection.addEventListener('click',()=>{ apiKeyContent.classList.contains('hidden')?showApiKeySection():hideApiKeySection(); });
 
-  apiKeyInput.addEventListener('input',()=>{
-    const k=apiKeyInput.value.trim(); if(k) saveApiKey(k); updateApiKeyStatus();
-  });
-
-  [regionSelect,categorySelect,maxResults,apiKeyInput].forEach(el=>{
+  [regionSelect,categorySelect,maxResults].forEach(el=>{
     el.addEventListener('keypress',e=>{ if(e.key==='Enter' && currentMode==='trending') fetchTrendingVideos(); });
+  });
+  [keywordInput,keywordRegionSelect,keywordTimeSelect].forEach(el=>{
+    el.addEventListener('keypress',e=>{ if(e.key==='Enter' && currentMode==='keyword') fetchTrendingByKeyword(); });
   });
   [channelUrlInput,channelMaxResults].forEach(el=>{
     el.addEventListener('keypress',e=>{ if(e.key==='Enter') analyzeChannel(); });
@@ -644,11 +708,8 @@
   document.getElementById('videoPopup').addEventListener('click',e=>{ if(e.target.id==='videoPopup') closeVideoPopup(); });
   document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ const p=document.getElementById('videoPopup'); if(!p.classList.contains('hidden')) closeVideoPopup(); } });
 
-  document.addEventListener('DOMContentLoaded',()=>{
-    const saved=loadApiKey(); if(saved){ apiKeyInput.value=saved; updateApiKeyStatus(); }
-  });
 </script>
 
-<!-- Catatan: Script Cloudflare challenge telah DIHAPUS untuk mencegah gangguan pada iframe YouTube. -->
+<!-- Note: Cloudflare challenge script was removed to prevent interference with YouTube iframe. -->
 </body>
 </html>
