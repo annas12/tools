@@ -459,6 +459,7 @@
     const estimatedEarnings = (views/1000)*rpm;
     const keywords = extractKeywords(video?.snippet?.title||'', video?.snippet?.description||'');
     const canEmbed = !!(video?.status?.embeddable && video?.contentRating?.ytRating !== 'ytAgeRestricted');
+    const channelId = video?.snippet?.channelId || '';
 
     return `
       <div class="bg-dark-card border border-dark-border rounded-xl overflow-hidden card-hover">
@@ -501,6 +502,12 @@
             </div>
           </div>
 
+          ${!isChannelMode && channelId ? `
+            <button onclick="analyzeVideoChannel('${channelId}')"
+                    class="mb-2 block w-full bg-blue-600 hover:bg-blue-500 text-white text-center py-2 px-4 rounded-lg transition-colors duration-200 text-sm font-medium cursor-pointer">
+              📺 Analyze This Channel
+            </button>
+          ` : ''}
           <button onclick="openYouTubeVideo('${videoId}', ${canEmbed})"
                   class="block w-full bg-youtube hover:bg-red-700 text-white text-center py-2 px-4 rounded-lg transition-colors duration-200 text-sm font-medium cursor-pointer">
             ▶️ Watch Video
@@ -529,6 +536,15 @@
     });
     videoGrid.innerHTML = rendered.join('');
     requestAnimationFrame(hydrateNativeAds);
+  }
+
+  function analyzeVideoChannel(channelId){
+    if(!channelId) return;
+    switchTab('channel');
+    channelUrlInput.value = `https://www.youtube.com/channel/${channelId}`;
+    channelControls.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    showMessage('success', 'Channel auto-filled. Starting channel analysis...');
+    analyzeChannel();
   }
 
   function openYouTubeVideo(videoId, canEmbed=true){
