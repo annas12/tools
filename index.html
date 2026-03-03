@@ -570,16 +570,33 @@
   function buildChannelFallback(channelId, videos=[]){
     const first = videos[0] || {};
     const sn = first.snippet || {};
+    const totalViews = videos.reduce((sum, v)=>sum + parseInt(v?.statistics?.viewCount||'0',10), 0);
+    const oldestPublishedAt = videos
+      .map(v=>v?.snippet?.publishedAt)
+      .filter(Boolean)
+      .sort()[0];
     return {
       id: channelId,
       snippet: {
         title: sn.channelTitle || 'Unknown Channel',
-        description: 'Channel metadata is unavailable from current worker response.',
-        publishedAt: sn.publishedAt || new Date().toISOString(),
-        thumbnails: sn.thumbnails || {}
+        description: sn.description || 'Channel metadata is unavailable from the current worker response.',
+        publishedAt: oldestPublishedAt || null,
+        thumbnails: sn.thumbnails || {},
+        country: sn.country || null
       },
-      statistics: {}
+      statistics: {
+        subscriberCount: null,
+        viewCount: totalViews || null,
+        videoCount: videos.length || null
+      }
     };
+  }
+
+  function formatStat(value){
+    if(value===null || value===undefined || value==='') return '-';
+    const parsed = Number(value);
+    if(Number.isNaN(parsed)) return '-';
+    return formatNumber(parsed);
   }
 
   async function analyzeChannel(){
@@ -627,10 +644,10 @@
     channelThumbnail.onerror=function(){ this.src=''; this.alt='Avatar failed to load'; this.style.display='none'; };
     channelTitle.textContent = sn.title||'-';
     channelDescription.textContent = sn.description || 'No description';
-    channelSubscribers.textContent = formatNumber(parseInt(stats.subscriberCount||0,10));
-    channelViews.textContent = formatNumber(parseInt(stats.viewCount||0,10));
-    channelVideos.textContent = formatNumber(parseInt(stats.videoCount||0,10));
-    channelCreated.textContent = formatFullDate(sn.publishedAt||new Date().toISOString());
+    channelSubscribers.textContent = formatStat(stats.subscriberCount);
+    channelViews.textContent = formatStat(stats.viewCount);
+    channelVideos.textContent = formatStat(stats.videoCount);
+    channelCreated.textContent = sn.publishedAt ? formatFullDate(sn.publishedAt) : '-';
     channelCountry.textContent = sn.country || branding.country || '-';
     channelIdText.textContent = channel.id || '-';
     channelInfo.classList.remove('hidden');
