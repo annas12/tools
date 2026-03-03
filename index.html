@@ -204,11 +204,13 @@
           <div class="flex-1">
             <h3 id="channelTitle" class="text-xl font-bold text-white mb-2"></h3>
             <p id="channelDescription" class="text-gray-400 text-sm mb-4 line-clamp-3"></p>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div class="text-center"><div id="channelSubscribers" class="text-lg font-bold text-youtube">-</div><div class="text-xs text-gray-500">Subscribers</div></div>
-              <div class="text-center"><div id="channelViews" class="text-lg font-bold text-green-400">-</div><div class="text-xs text-gray-500">Total Views</div></div>
-              <div class="text-center"><div id="channelVideos" class="text-lg font-bold text-blue-400">-</div><div class="text-xs text-gray-500">Videos</div></div>
-              <div class="text-center"><div id="channelCreated" class="text-lg font-bold text-purple-400">-</div><div class="text-xs text-gray-500">Created</div></div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              <div class="bg-dark-bg border border-dark-border rounded-lg p-3"><div class="text-xs text-gray-500">Subscribers</div><div id="channelSubscribers" class="text-xl font-bold text-white mt-1">-</div></div>
+              <div class="bg-dark-bg border border-dark-border rounded-lg p-3"><div class="text-xs text-gray-500">Total Views</div><div id="channelViews" class="text-xl font-bold text-white mt-1">-</div></div>
+              <div class="bg-dark-bg border border-dark-border rounded-lg p-3"><div class="text-xs text-gray-500">Total Videos</div><div id="channelVideos" class="text-xl font-bold text-white mt-1">-</div></div>
+              <div class="bg-dark-bg border border-dark-border rounded-lg p-3"><div class="text-xs text-gray-500">Joined</div><div id="channelCreated" class="text-xl font-bold text-white mt-1">-</div></div>
+              <div class="bg-dark-bg border border-dark-border rounded-lg p-3"><div class="text-xs text-gray-500">Country</div><div id="channelCountry" class="text-xl font-bold text-white mt-1">-</div></div>
+              <div class="bg-dark-bg border border-dark-border rounded-lg p-3"><div class="text-xs text-gray-500">Channel ID</div><div id="channelIdText" class="text-sm font-bold text-white mt-1 break-all">-</div></div>
             </div>
           </div>
         </div>
@@ -301,6 +303,8 @@
   const channelViews = document.getElementById('channelViews');
   const channelVideos = document.getElementById('channelVideos');
   const channelCreated = document.getElementById('channelCreated');
+  const channelCountry = document.getElementById('channelCountry');
+  const channelIdText = document.getElementById('channelIdText');
 
   const API_BASE = 'https://yt-proxy-worker.annasmashuri97.workers.dev';
   const NATIVE_AD_CLIENT = 'ca-pub-5156172278330264';
@@ -327,7 +331,7 @@
   }
   function formatFullDate(dateString) {
     const date = new Date(dateString);
-    return date.toLocaleDateString('id-ID',{year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'Asia/Jakarta'});
+    return date.toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'});
   }
   function formatYearOnly(dateString){ return new Date(dateString).getFullYear().toString(); }
 
@@ -620,7 +624,7 @@
   }
 
   function displayChannelInfo(channel){
-    const stats=channel.statistics||{}, sn=channel.snippet||{};
+    const stats=channel.statistics||{}, sn=channel.snippet||{}, branding=channel.brandingSettings?.channel||{};
     channelThumbnail.src = sn.thumbnails?.medium?.url || sn.thumbnails?.default?.url || '';
     channelThumbnail.onerror=function(){ this.src=''; this.alt='Avatar failed to load'; this.style.display='none'; };
     channelTitle.textContent = sn.title||'-';
@@ -628,7 +632,9 @@
     channelSubscribers.textContent = formatNumber(parseInt(stats.subscriberCount||0,10));
     channelViews.textContent = formatNumber(parseInt(stats.viewCount||0,10));
     channelVideos.textContent = formatNumber(parseInt(stats.videoCount||0,10));
-    channelCreated.textContent = formatYearOnly(sn.publishedAt||new Date().toISOString());
+    channelCreated.textContent = formatFullDate(sn.publishedAt||new Date().toISOString());
+    channelCountry.textContent = sn.country || branding.country || '-';
+    channelIdText.textContent = channel.id || '-';
     channelInfo.classList.remove('hidden');
   }
 
