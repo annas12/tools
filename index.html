@@ -49,51 +49,16 @@
 
   <!-- Main -->
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <!-- API Key -->
-    <div id="apiKeySection" class="bg-dark-card rounded-xl border border-dark-border p-6 mb-6">
-      <div class="flex items-center justify-between mb-4">
-        <div class="flex items-center space-x-3">
-          <svg class="w-5 h-5 text-youtube" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M18 8a6 6 0 01-7.743 5.743L10 14l-1 1-1 1H6v2H2v-4l4.257-4.257A6 6 0 1118 8zm-6-4a1 1 0 100 2 2 2 0 012 2 1 1 0 102 0 4 4 0 00-4-4z" clip-rule="evenodd"/>
-          </svg>
-          <h3 class="text-lg font-semibold text-white">YouTube API Key</h3>
-          <div id="apiKeyStatus" class="hidden">
-            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-900/50 text-green-300 border border-green-500/50">✓ Tersimpan</span>
-          </div>
-        </div>
-        <button id="toggleApiSection" class="text-gray-400 hover:text-white transition-colors duration-200">
-          <svg id="hideIcon" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
-          </svg>
-          <svg id="showIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-          </svg>
-        </button>
-      </div>
-      <div id="apiKeyContent">
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 items-end">
-          <div class="lg:col-span-2">
-            <label class="block text-sm font-medium text-gray-300 mb-2">Masukkan YouTube Data API v3 Key Anda</label>
-            <input type="password" id="apiKeyInput" placeholder="AIzaSyC-..." class="w-full bg-dark-bg border border-dark-border rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-youtube focus:border-transparent">
-            <p class="text-xs text-gray-500 mt-1">API key disimpan lokal di browser Anda dan tidak dikirim ke server manapun</p>
-          </div>
-          <div>
-            <button id="toggleApiKey" class="w-full bg-gray-700 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 text-sm">👁️ Tampilkan</button>
-          </div>
-        </div>
-        <div class="mt-4 p-3 bg-blue-900/30 border border-blue-500/50 rounded-lg">
-          <div class="flex items-start space-x-2">
-            <svg class="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
-            </svg>
-            <div class="text-xs text-blue-200">
-              <strong>Cara mendapatkan API Key:</strong><br>
-              1. Buka <a href="https://console.cloud.google.com/" target="_blank" class="text-blue-400 hover:underline">Google Cloud Console</a><br>
-              2. Buat project baru → APIs & Services → Library<br>
-              3. Cari "YouTube Data API v3" → Enable<br>
-              4. Credentials → Create Credentials → API Key
-            </div>
-          </div>
+    <!-- API Gateway Info -->
+    <div id="apiGatewaySection" class="bg-dark-card rounded-xl border border-dark-border p-6 mb-6">
+      <div class="flex items-start space-x-3">
+        <svg class="w-5 h-5 text-green-400 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M18 10A8 8 0 114.522 4.26a1 1 0 11-1.044-1.706A10 10 0 1020 10a1 1 0 10-2 0zm-7 4a1 1 0 100-2H9a1 1 0 100 2h2zm2-7a1 1 0 10-2 0v4a1 1 0 102 0V7z" clip-rule="evenodd"/>
+        </svg>
+        <div>
+          <h3 class="text-lg font-semibold text-white">API Key Sudah Dikelola via Cloudflare Worker</h3>
+          <p class="text-sm text-gray-300 mt-1">User tidak perlu memasukkan API key lagi. Semua request diarahkan ke endpoint Worker Anda.</p>
+          <p class="text-xs text-gray-500 mt-2 break-all">Endpoint: <span class="text-gray-400">https://yt-proxy-worker.annasmashuri97.workers.dev</span></p>
         </div>
       </div>
     </div>
@@ -279,7 +244,7 @@
         </svg>
       </div>
       <h3 class="text-lg font-medium text-gray-300 mb-2">Belum ada data</h3>
-      <p class="text-gray-500 mb-6">Masukkan API key lalu pilih mode analisa untuk mulai riset</p>
+      <p class="text-gray-500 mb-6">Pilih mode analisa untuk mulai riset</p>
     </div>
   </main>
 </div>
@@ -311,13 +276,6 @@
   const regionSelect = document.getElementById('regionSelect');
   const categorySelect = document.getElementById('categorySelect');
   const maxResults = document.getElementById('maxResults');
-  const apiKeyInput = document.getElementById('apiKeyInput');
-  const toggleApiKey = document.getElementById('toggleApiKey');
-  const toggleApiSection = document.getElementById('toggleApiSection');
-  const apiKeyContent = document.getElementById('apiKeyContent');
-  const apiKeyStatus = document.getElementById('apiKeyStatus');
-  const hideIcon = document.getElementById('hideIcon');
-  const showIcon = document.getElementById('showIcon');
   const statusMessage = document.getElementById('statusMessage');
   const errorMessage = document.getElementById('errorMessage');
   const successMessage = document.getElementById('successMessage');
@@ -356,7 +314,7 @@
   const channelVideos = document.getElementById('channelVideos');
   const channelCreated = document.getElementById('channelCreated');
 
-  const API_KEY_STORAGE = 'youtube_api_key';
+  const API_BASE = 'https://yt-proxy-worker.annasmashuri97.workers.dev';
   let currentMode = 'trending';
 
   // ====== Utils ======
@@ -433,16 +391,19 @@
   function setChannelLoading(b){ analyzeChannelBtn.disabled=b; analyzeText.textContent=b?'Menganalisis...':'Analisis Channel'; analyzeSpinner.classList.toggle('hidden',!b); }
   function setKeywordLoading(b){ analyzeKeywordBtn.disabled=b; keywordText.textContent=b?'Menganalisa...':'Analisa Keyword'; keywordSpinner.classList.toggle('hidden',!b); }
 
-  function saveApiKey(k){ localStorage.setItem(API_KEY_STORAGE,k); }
-  function loadApiKey(){ return localStorage.getItem(API_KEY_STORAGE)||''; }
-  function validateApiKey(k){ return k && k.trim().length>20 && k.startsWith('AIza'); }
-  function updateApiKeyStatus(){
-    const k=apiKeyInput.value.trim();
-    apiKeyStatus.classList.toggle('hidden',!validateApiKey(k));
-    if(validateApiKey(k)) setTimeout(()=>{ if(validateApiKey(apiKeyInput.value.trim())) hideApiKeySection(); },1000);
+  async function apiFetch(path, params={}){
+    const qs = new URLSearchParams();
+    Object.entries(params).forEach(([k,v])=>{ if(v!==undefined && v!==null && v!=='') qs.set(k, String(v)); });
+    const url = `${API_BASE}${path}${qs.toString() ? `?${qs.toString()}` : ''}`;
+    const res = await fetch(url);
+    let data = {};
+    try { data = await res.json(); } catch (_) {}
+    if(!res.ok){
+      const m = data?.error?.message || data?.message || `HTTP ${res.status}`;
+      throw new Error(m);
+    }
+    return data;
   }
-  function hideApiKeySection(){ apiKeyContent.classList.add('hidden'); hideIcon.classList.add('hidden'); showIcon.classList.remove('hidden'); }
-  function showApiKeySection(){ apiKeyContent.classList.remove('hidden'); hideIcon.classList.remove('hidden'); showIcon.classList.add('hidden'); }
 
   function calculateRPM(video){
     const categoryId = video?.snippet?.categoryId;
@@ -563,23 +524,24 @@
   }
 
   // ====== API Calls ======
-  async function getChannelIdFromUsername(username, apiKey){
-    try{
-      const r = await fetch(`https://www.googleapis.com/youtube/v3/channels?part=id&forUsername=${encodeURIComponent(username)}&key=${apiKey}`);
-      const d = await r.json();
-      if(d.items && d.items.length>0) return d.items[0].id;
-      const s = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&type=channel&q=${encodeURIComponent(username)}&key=${apiKey}`);
-      const sd = await s.json();
-      if(sd.items && sd.items.length>0) return sd.items[0].snippet.channelId;
-      return null;
-    }catch(e){ console.error(e); return null; }
+  async function getChannelIdFromUsername(username){
+    const candidates = [
+      `/api/channel-id`,
+      `/api/channel/resolve`
+    ];
+    for(const endpoint of candidates){
+      try{
+        const d = await apiFetch(endpoint, { username });
+        if(d.channelId) return d.channelId;
+        if(d.items && d.items[0]?.id) return d.items[0].id;
+      }catch(_){ /* try next endpoint */ }
+    }
+    return null;
   }
 
   async function analyzeChannel(){
-    const apiKey = apiKeyInput.value.trim();
     const channelUrl = channelUrlInput.value.trim();
     const maxChannelResults = parseInt(channelMaxResults.value,10);
-    if(!validateApiKey(apiKey)){ showMessage('error','API Key tidak valid.'); return; }
     if(!channelUrl){ showMessage('error','Masukkan URL channel YouTube terlebih dahulu.'); return; }
     const channelData = extractChannelId(channelUrl);
     if(!channelData){ showMessage('error','Format URL channel tidak valid.'); return; }
@@ -588,35 +550,28 @@
     try{
       let channelId = channelData.value;
       if(channelData.type==='username'){
-        channelId = await getChannelIdFromUsername(channelData.value, apiKey);
-        if(!channelId) throw new Error('Channel tidak ditemukan. Periksa URL.');
+        channelId = await getChannelIdFromUsername(channelData.value);
+        if(!channelId) throw new Error('Channel handle tidak dapat di-resolve. Tambahkan endpoint resolve di Worker atau gunakan URL /channel/UC...');
       }
 
-      const ch = await fetch(`https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&id=${channelId}&key=${apiKey}`);
-      if(!ch.ok){ const ed=await ch.json(); throw new Error(ed.error?.message || `HTTP ${ch.status}`); }
-      const chInfo = await ch.json();
-      if(!chInfo.items||!chInfo.items.length) throw new Error('Channel tidak ditemukan.');
+      const payload = await apiFetch('/api/channel', { channelId, max: maxChannelResults });
+      const videos = payload.videos || payload.items || [];
+      if(!videos.length) throw new Error('Tidak ada video ditemukan di channel ini.');
 
-      const list = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${channelId}&type=video&order=date&maxResults=${maxChannelResults}&key=${apiKey}`);
-      if(!list.ok){ const ed=await list.json(); throw new Error(ed.error?.message || `HTTP ${list.status}`); }
-      const listData = await list.json();
-      if(!listData.items||!listData.items.length) throw new Error('Tidak ada video ditemukan di channel ini.');
-
-      const videoIds = listData.items.map(it=>it.id.videoId).filter(Boolean).join(',');
-      const stats = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics,contentDetails,status,player&id=${videoIds}&key=${apiKey}`);
-      const statsData = await stats.json();
-
-      const embeddableItems = (statsData.items||[]).filter(v=>isEmbeddable(v,null));
+      const embeddableItems = videos.filter(v=>isEmbeddable(v,null));
       if(!embeddableItems.length) throw new Error('Video channel ini tidak ada yang mengizinkan embed / dibatasi.');
 
-      displayChannelInfo(chInfo.items[0]);
+      if(payload.channel){
+        displayChannelInfo(payload.channel);
+      } else {
+        channelInfo.classList.add('hidden');
+      }
       displayResults(embeddableItems,'channel');
-      showMessage('success',`Berhasil menganalisis channel dengan ${embeddableItems.length} video yang dapat di-embed`);
+      showMessage('success',`Berhasil menganalisis channel dengan ${embeddableItems.length} video.`);
     }catch(err){
       console.error(err);
       let m = err.message||'Error';
-      if(m.includes('API_KEY_INVALID')) m='API Key tidak valid.';
-      else if(m.includes('QUOTA_EXCEEDED')) m='Kuota API habis.';
+      if(m.includes('QUOTA_EXCEEDED')) m='Kuota API habis.';
       else if(m.includes('ACCESS_NOT_CONFIGURED')) m='YouTube Data API v3 belum diaktifkan.';
       showMessage('error',`Gagal menganalisis channel: ${m}`);
       channelInfo.classList.add('hidden'); emptyState.classList.remove('hidden'); resultsContainer.classList.add('hidden');
@@ -637,19 +592,12 @@
   }
 
   async function fetchTrendingVideos(){
-    const apiKey = apiKeyInput.value.trim();
     const region = regionSelect.value;
     const category = categorySelect.value;
     const max = parseInt(maxResults.value,10);
-    if(!validateApiKey(apiKey)){ showMessage('error','API Key tidak valid.'); return; }
-    saveApiKey(apiKey);
     setLoading(true);
     try{
-      let url = `https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics,contentDetails,status,player&chart=mostPopular&regionCode=${region}&maxResults=${max}&key=${apiKey}`;
-      if(category) url += `&videoCategoryId=${category}`;
-      const r = await fetch(url);
-      if(!r.ok){ const ed=await r.json(); throw new Error(ed.error?.message || `HTTP ${r.status}: ${r.statusText}`); }
-      const data = await r.json();
+      const data = await apiFetch('/api/trending', { region, category, max });
       if(!data.items || !data.items.length) throw new Error('Tidak ada video trending untuk region ini.');
 
       const embeddableItems = data.items.filter(v=>isEmbeddable(v, region));
@@ -662,8 +610,7 @@
     }catch(err){
       console.error(err);
       let m = err.message||'Error';
-      if(m.includes('API_KEY_INVALID')) m='API Key tidak valid.';
-      else if(m.includes('QUOTA_EXCEEDED')) m='Kuota API sudah habis.';
+      if(m.includes('QUOTA_EXCEEDED')) m='Kuota API sudah habis.';
       else if(m.includes('ACCESS_NOT_CONFIGURED')) m='YouTube Data API v3 belum diaktifkan.';
       showMessage('error',`Gagal memuat data: ${m}`);
       emptyState.classList.remove('hidden'); resultsContainer.classList.add('hidden');
@@ -671,31 +618,17 @@
   }
 
   async function fetchTrendingByKeyword(){
-    const apiKey = apiKeyInput.value.trim();
     const keyword = keywordInput.value.trim();
     const region = keywordRegionSelect.value;
     const days = parseInt(keywordTimeSelect.value,10);
-    if(!validateApiKey(apiKey)){ showMessage('error','API Key tidak valid.'); return; }
     if(!keyword){ showMessage('error','Masukkan keyword terlebih dahulu.'); return; }
 
-    saveApiKey(apiKey);
     setKeywordLoading(true);
     try{
-      const publishedAfter = new Date(Date.now() - (days*24*60*60*1000)).toISOString();
-      const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&order=viewCount&maxResults=25&regionCode=${region}&publishedAfter=${publishedAfter}&q=${encodeURIComponent(keyword)}&key=${apiKey}`;
-      const sr = await fetch(searchUrl);
-      if(!sr.ok){ const ed=await sr.json(); throw new Error(ed.error?.message || `HTTP ${sr.status}`); }
-      const searchData = await sr.json();
-      if(!searchData.items || !searchData.items.length) throw new Error('Tidak ada hasil untuk keyword ini pada rentang waktu terpilih.');
+      const data = await apiFetch('/api/keyword', { q: keyword, region, days });
+      if(!data.items || !data.items.length) throw new Error('Tidak ada hasil untuk keyword ini pada rentang waktu terpilih.');
 
-      const videoIds = searchData.items.map(it=>it.id?.videoId).filter(Boolean).join(',');
-      if(!videoIds) throw new Error('Tidak ada video valid yang ditemukan.');
-
-      const vr = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics,contentDetails,status,player&id=${videoIds}&key=${apiKey}`);
-      if(!vr.ok){ const ed=await vr.json(); throw new Error(ed.error?.message || `HTTP ${vr.status}`); }
-      const videoData = await vr.json();
-
-      const embeddableItems = (videoData.items||[]).filter(v=>isEmbeddable(v, region));
+      const embeddableItems = data.items.filter(v=>isEmbeddable(v, region));
       if(!embeddableItems.length) throw new Error('Hasil ditemukan, tetapi tidak ada video yang bisa di-embed di region ini.');
 
       displayResults(embeddableItems,'keyword');
@@ -703,8 +636,7 @@
     }catch(err){
       console.error(err);
       let m = err.message||'Error';
-      if(m.includes('API_KEY_INVALID')) m='API Key tidak valid.';
-      else if(m.includes('QUOTA_EXCEEDED')) m='Kuota API sudah habis.';
+      if(m.includes('QUOTA_EXCEEDED')) m='Kuota API sudah habis.';
       else if(m.includes('ACCESS_NOT_CONFIGURED')) m='YouTube Data API v3 belum diaktifkan.';
       showMessage('error',`Gagal analisa keyword: ${m}`);
       emptyState.classList.remove('hidden'); resultsContainer.classList.add('hidden');
@@ -719,17 +651,8 @@
   keywordTab.addEventListener('click',()=>switchTab('keyword'));
   channelTab.addEventListener('click',()=>switchTab('channel'));
 
-  toggleApiKey.addEventListener('click',()=>{
-    if(apiKeyInput.type==='password'){ apiKeyInput.type='text'; toggleApiKey.textContent='🙈 Sembunyikan'; }
-    else { apiKeyInput.type='password'; toggleApiKey.textContent='👁️ Tampilkan'; }
-  });
-  toggleApiSection.addEventListener('click',()=>{ apiKeyContent.classList.contains('hidden')?showApiKeySection():hideApiKeySection(); });
 
-  apiKeyInput.addEventListener('input',()=>{
-    const k=apiKeyInput.value.trim(); if(k) saveApiKey(k); updateApiKeyStatus();
-  });
-
-  [regionSelect,categorySelect,maxResults,apiKeyInput].forEach(el=>{
+  [regionSelect,categorySelect,maxResults].forEach(el=>{
     el.addEventListener('keypress',e=>{ if(e.key==='Enter' && currentMode==='trending') fetchTrendingVideos(); });
   });
   [keywordInput,keywordRegionSelect,keywordTimeSelect].forEach(el=>{
@@ -742,9 +665,6 @@
   document.getElementById('videoPopup').addEventListener('click',e=>{ if(e.target.id==='videoPopup') closeVideoPopup(); });
   document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ const p=document.getElementById('videoPopup'); if(!p.classList.contains('hidden')) closeVideoPopup(); } });
 
-  document.addEventListener('DOMContentLoaded',()=>{
-    const saved=loadApiKey(); if(saved){ apiKeyInput.value=saved; updateApiKeyStatus(); }
-  });
 </script>
 
 <!-- Catatan: Script Cloudflare challenge telah DIHAPUS untuk mencegah gangguan pada iframe YouTube. -->
