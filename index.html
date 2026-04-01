@@ -308,6 +308,7 @@
 
   const API_BASE = 'https://yt-proxy-worker.annasmashuri97.workers.dev';
   let currentMode = 'trending';
+  let currentChannelTotalVideos = null;
 
   // ====== Utils ======
   function formatNumber(num) {
@@ -358,7 +359,10 @@
     trendingControls.classList.toggle('hidden', mode!=='trending');
     keywordControls.classList.toggle('hidden', mode!=='keyword');
     channelControls.classList.toggle('hidden', mode!=='channel');
-    if(mode!=='channel') channelInfo.classList.add('hidden');
+    if(mode!=='channel'){
+      channelInfo.classList.add('hidden');
+      currentChannelTotalVideos = null;
+    }
     resultsContainer.classList.add('hidden');
     emptyState.classList.remove('hidden');
   }
@@ -501,7 +505,10 @@
 
   function displayResults(videos, mode='trending'){
     if(!videos||!videos.length){ emptyState.classList.remove('hidden'); resultsContainer.classList.add('hidden'); return; }
-    emptyState.classList.add('hidden'); resultsContainer.classList.remove('hidden'); resultsCount.textContent=videos.length;
+    emptyState.classList.add('hidden'); resultsContainer.classList.remove('hidden');
+    resultsCount.textContent = mode==='channel' && Number.isFinite(currentChannelTotalVideos)
+      ? `${videos.length}/${currentChannelTotalVideos}`
+      : videos.length;
     document.querySelector('#resultsContainer h2').textContent = mode==='channel' ? 'Channel Videos' : (mode==='keyword' ? 'Trending by Keyword' : 'Trending Videos');
 
     videoGrid.innerHTML = videos.map((v,i)=>createVideoCard(v,i,mode==='channel')).join('');
@@ -592,6 +599,63 @@
     };
   }
 
+  function toStatNumber(...values){
+    for (const value of values){
+      if(value===null || value===undefined || value==='') continue;
+      const parsed = Number(value);
+      if(Number.isFinite(parsed) && parsed >= 0) return parsed;
+    }
+    return null;
+  }
+
+  function normalizeChannelMeta(channel, fallbackChannelId, videos=[]){
+    const safeChannel = channel || {};
+    const statistics = safeChannel.statistics || {};
+    const snippet = safeChannel.snippet || {};
+    const fallback = buildChannelFallback(fallbackChannelId, videos);
+    const fallbackStats = fallback.statistics || {};
+    const fallbackSnippet = fallback.snippet || {};
+
+    const normalizedStats = {
+      subscriberCount: toStatNumber(
+        statistics.subscriberCount,
+        statistics.subscribers,
+        safeChannel.subscriberCount,
+        safeChannel.subscribers
+      ),
+      viewCount: toStatNumber(
+        statistics.viewCount,
+        statistics.views,
+        safeChannel.viewCount,
+        safeChannel.views,
+        fallbackStats.viewCount
+      ),
+      videoCount: toStatNumber(
+        statistics.videoCount,
+        statistics.video_count,
+        statistics.totalVideos,
+        safeChannel.videoCount,
+        safeChannel.totalVideos,
+        safeChannel.video_count,
+        fallbackStats.videoCount
+      ),
+      hiddenSubscriberCount: Boolean(
+        statistics.hiddenSubscriberCount ?? safeChannel.hiddenSubscriberCount
+      )
+    };
+
+    return {
+      ...fallback,
+      ...safeChannel,
+      id: safeChannel.id || safeChannel.channelId || fallbackChannelId || fallback.id,
+      snippet: {
+        ...fallbackSnippet,
+        ...snippet
+      },
+      statistics: normalizedStats
+    };
+  }
+
   function formatStat(value){
     if(value===null || value===undefined || value==='') return '-';
     const parsed = Number(value);
@@ -618,16 +682,15 @@
       const videos = payload.videos || payload.items || [];
       if(!videos.length) throw new Error('No videos found in this channel.');
 
-      const embeddableItems = videos.filter(v=>isEmbeddable(v,null));
-      if(!embeddableItems.length) throw new Error('No channel videos are embeddable or they are restricted.');
-
       let channelMeta = payload.channel || payload.channelInfo || payload.channelDetails || null;
       if(!channelMeta){
         channelMeta = await fetchChannelMeta(channelId);
       }
-      displayChannelInfo(channelMeta || buildChannelFallback(channelId, videos));
-      displayResults(embeddableItems,'channel');
-      showMessage('success',`Successfully analyzed channel with ${embeddableItems.length} videos.`);
+      const normalizedChannel = normalizeChannelMeta(channelMeta, channelId, videos);
+      currentChannelTotalVideos = normalizedChannel?.statistics?.videoCount ?? null;
+      displayChannelInfo(normalizedChannel);
+      displayResults(videos,'channel');
+      showMessage('success',`Successfully analyzed channel with ${videos.length} videos loaded.`);
     }catch(err){
       console.error(err);
       let m = err.message||'Error';
@@ -644,7 +707,7 @@
     channelThumbnail.onerror=function(){ this.src=''; this.alt='Avatar failed to load'; this.style.display='none'; };
     channelTitle.textContent = sn.title||'-';
     channelDescription.textContent = sn.description || 'No description';
-    channelSubscribers.textContent = formatStat(stats.subscriberCount);
+    channelSubscribers.textContent = stats.hiddenSubscriberCount ? 'Hidden by channel owner' : formatStat(stats.subscriberCount);
     channelViews.textContent = formatStat(stats.viewCount);
     channelVideos.textContent = formatStat(stats.videoCount);
     channelCreated.textContent = sn.publishedAt ? formatFullDate(sn.publishedAt) : '-';
