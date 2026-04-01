@@ -144,18 +144,11 @@
 
     <!-- Channel Controls -->
     <div id="channelControls" class="bg-dark-card rounded-xl border border-dark-border p-6 mb-8 hidden">
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
         <div class="md:col-span-2">
           <label class="block text-sm font-medium text-gray-300 mb-2">YouTube Channel URL</label>
           <input type="text" id="channelUrlInput" placeholder="https://www.youtube.com/@channelname or https://www.youtube.com/channel/UCxxxxx" class="w-full bg-dark-bg border border-dark-border rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-youtube focus:border-transparent">
           <p class="text-xs text-gray-500 mt-1">Enter YouTube channel URL (@username or channel ID format)</p>
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-300 mb-2">Video Count</label>
-          <select id="channelMaxResults" class="w-full bg-dark-bg border border-dark-border rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-youtube focus:border-transparent">
-            <option value="10">10 Videos</option><option value="20" selected>20 Videos</option>
-            <option value="30">30 Videos</option><option value="50">50 Videos</option>
-          </select>
         </div>
         <div>
           <button id="analyzeChannelBtn" class="w-full bg-youtube hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center space-x-2 disabled:bg-gray-600 disabled:cursor-not-allowed">
@@ -291,7 +284,6 @@
   const keywordSpinner = document.getElementById('keywordSpinner');
 
   const channelUrlInput = document.getElementById('channelUrlInput');
-  const channelMaxResults = document.getElementById('channelMaxResults');
   const analyzeChannelBtn = document.getElementById('analyzeChannelBtn');
   const analyzeText = document.getElementById('analyzeText');
   const analyzeSpinner = document.getElementById('analyzeSpinner');
@@ -574,6 +566,39 @@
     return null;
   }
 
+  async function fetchAllChannelVideos(channelId){
+    const allVideos = [];
+    const seenIds = new Set();
+    let pageToken = '';
+    let safety = 0;
+    let baseChannelMeta = null;
+
+    do{
+      const params = { channelId, max: 50 };
+      if(pageToken) params.pageToken = pageToken;
+      const payload = await apiFetch('/api/channel', params);
+
+      if(!baseChannelMeta){
+        baseChannelMeta = payload.channel || payload.channelInfo || payload.channelDetails || null;
+      }
+
+      const pageVideos = payload.videos || payload.items || [];
+      for(const video of pageVideos){
+        const id = getVideoId(video);
+        if(!id || seenIds.has(id)) continue;
+        seenIds.add(id);
+        allVideos.push(video);
+      }
+
+      const next = payload.nextPageToken || payload.pageToken || payload.next_page_token || null;
+      if(!next || next === pageToken) break;
+      pageToken = next;
+      safety += 1;
+    }while(safety < 20);
+
+    return { videos: allVideos, channelMeta: baseChannelMeta };
+  }
+
   function buildChannelFallback(channelId, videos=[]){
     const first = videos[0] || {};
     const sn = first.snippet || {};
@@ -665,7 +690,6 @@
 
   async function analyzeChannel(){
     const channelUrl = channelUrlInput.value.trim();
-    const maxChannelResults = parseInt(channelMaxResults.value,10);
     if(!channelUrl){ showMessage('error','Please enter a YouTube channel URL first.'); return; }
     const channelData = extractChannelId(channelUrl);
     if(!channelData){ showMessage('error','Invalid channel URL format.'); return; }
@@ -678,11 +702,10 @@
         if(!channelId) throw new Error('Channel handle could not be resolved. Add a resolve endpoint in Worker or use a /channel/UC... URL.');
       }
 
-      const payload = await apiFetch('/api/channel', { channelId, max: maxChannelResults });
-      const videos = payload.videos || payload.items || [];
+      const { videos, channelMeta: channelMetaFromPages } = await fetchAllChannelVideos(channelId);
       if(!videos.length) throw new Error('No videos found in this channel.');
 
-      let channelMeta = payload.channel || payload.channelInfo || payload.channelDetails || null;
+      let channelMeta = channelMetaFromPages;
       if(!channelMeta){
         channelMeta = await fetchChannelMeta(channelId);
       }
@@ -707,7 +730,9 @@
     channelThumbnail.onerror=function(){ this.src=''; this.alt='Avatar failed to load'; this.style.display='none'; };
     channelTitle.textContent = sn.title||'-';
     channelDescription.textContent = sn.description || 'No description';
-    channelSubscribers.textContent = stats.hiddenSubscriberCount ? 'Hidden by channel owner' : formatStat(stats.subscriberCount);
+    if(stats.hiddenSubscriberCount) channelSubscribers.textContent = 'Hidden by channel owner';
+    else if(stats.subscriberCount===null || stats.subscriberCount===undefined) channelSubscribers.textContent = 'Not publicly available';
+    else channelSubscribers.textContent = formatStat(stats.subscriberCount);
     channelViews.textContent = formatStat(stats.viewCount);
     channelVideos.textContent = formatStat(stats.videoCount);
     channelCreated.textContent = sn.publishedAt ? formatFullDate(sn.publishedAt) : '-';
@@ -783,7 +808,7 @@
   [keywordInput,keywordRegionSelect,keywordTimeSelect].forEach(el=>{
     el.addEventListener('keypress',e=>{ if(e.key==='Enter' && currentMode==='keyword') fetchTrendingByKeyword(); });
   });
-  [channelUrlInput,channelMaxResults].forEach(el=>{
+  [channelUrlInput].forEach(el=>{
     el.addEventListener('keypress',e=>{ if(e.key==='Enter') analyzeChannel(); });
   });
 
