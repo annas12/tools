@@ -35,14 +35,9 @@ $_EVENT_ID = md5($_V_IP . strtotime(date("Y-m-d H:i:s")));
             display: block;
         }
 
-        .simple-slider img {
+        .simple-slider img,
+        .img-container img {
             width: 100%;
-            height: auto;
-            display: block;
-        }
-
-        .floating-btn img {
-            max-width: 100%;
             height: auto;
             display: block;
         }
@@ -72,29 +67,42 @@ $_EVENT_ID = md5($_V_IP . strtotime(date("Y-m-d H:i:s")));
 
     <?php if (!empty($META_PIXEL_ID)): ?>
         <script>
-            if (typeof fbq === 'function') {
+            function fireBaseTracking() {
+                if (typeof fbq !== 'function') return;
+
                 fbq('init', '<?php echo $META_PIXEL_ID; ?>');
-                fbq('track', 'PageView', {}, { eventID: "ePV-<?php echo $_EVENT_ID; ?>" });
+
+                try {
+                    fbq('track', 'PageView', {}, {
+                        eventID: "ePV-<?php echo $_EVENT_ID; ?>"
+                    });
+
+                    fbq('track', 'ViewContent', {
+                        content_name: 'Landing Page Etawalin',
+                        content_category: 'Page Content'
+                    }, {
+                        eventID: "eVC-<?php echo $_EVENT_ID; ?>"
+                    });
+                } catch (e) { }
+            }
+
+            if (typeof fbq === 'function') {
+                fireBaseTracking();
             } else {
                 window.addEventListener('load', function () {
-                    if (typeof fbq === 'function') {
-                        fbq('init', '<?php echo $META_PIXEL_ID; ?>');
-                        try {
-                            fbq('track', 'PageView', {}, { eventID: "ePV-<?php echo $_EVENT_ID; ?>" });
-                        } catch (e) { }
-                    }
+                    fireBaseTracking();
                 });
             }
         </script>
     <?php endif; ?>
 
-    <!-- Export konfigurasi tracking ke client -->
+    <!-- Config tracking untuk client -->
     <script>
         window._TRACKING = {
             enabledClientPixel: <?php echo !empty($TRACKING['enable_client_pixel']) && $TRACKING['enable_client_pixel'] ? 'true' : 'false'; ?>,
             enabledCapi: <?php echo !empty($TRACKING['enable_capi']) && $TRACKING['enable_capi'] ? 'true' : 'false'; ?>,
-            eventAddToCart: '<?php echo addslashes($TRACKING['event_add_to_cart'] ?? 'AddToCart'); ?>',
-            eventLead: '<?php echo addslashes($TRACKING['event_lead'] ?? 'Lead'); ?>',
+            eventViewContent: 'ViewContent',
+            eventPageView: 'PageView',
             eventId: '<?php echo addslashes($_EVENT_ID); ?>',
             pixelId: '<?php echo addslashes($META_PIXEL_ID); ?>'
         };
@@ -107,13 +115,6 @@ $_EVENT_ID = md5($_V_IP . strtotime(date("Y-m-d H:i:s")));
 
     <div id="main-container" class="section">
         <section>
-
-            <!-- Floating Button -->
-            <center>
-                <button class="floating-btn" type="button" onclick="goToAlert()">
-                    <img src="assets/img/tombol.webp" alt="Floating Button" />
-                </button>
-            </center>
 
             <!-- Gambar 1 -->
             <div class="img-container">
@@ -140,178 +141,10 @@ $_EVENT_ID = md5($_V_IP . strtotime(date("Y-m-d H:i:s")));
                 </div>
             </div>
 
-            <!-- Promo Text -->
-            <div style="text-align: center;">
-                <div id="value" style="font: 700 60px system-ui; color: #000;">17</div>
-                <p style="text-transform: uppercase; color: #000; font-size: 15px; font-weight: bold;">
-                    Stok Promo Tersisa Hari Ini
-                </p>
-            </div>
-
-            <!-- Anchor ke form -->
-            <div class="img-container" id="alert">
-                <img src="assets/img/isi-form.gif" alt="Isi Form">
-            </div>
-
         </section>
     </div>
 
-    <div class="penting">
-        <span class="closebtnAlert" onclick="this.parentElement.style.display='none';">&times;</span>
-        <strong><b>Pesan Hari ini kirim Hari ini.</b></strong>
-        <p><b>Bisa COD Seluruh Indonesia</b></p>
-    </div>
-
-    <div id="floating-text" class="section" style="display: none;">
-        <h3 class="text-center">𝐒𝐄𝐋𝐀𝐌𝐀𝐓 𝐃𝐀𝐓𝐀𝐍𝐆 𝐃𝐈 𝐅𝐎𝐑𝐌 𝐏𝐄𝐍𝐆𝐀𝐌𝐁𝐈𝐋𝐀𝐍 𝐏𝐑𝐎𝐌𝐎 𝐄𝐓𝐀𝐖𝐀𝐋𝐈𝐍</h3>
-        <h5 class="text-center">PT. TRESNO JAMU INDONESIA</h5>
-        <hr>
-        <div>
-            Selamat Anda Mendapatkan Promo Turun Harga (Paket 3 Box) : <br>
-            ✅ Potongan Ongkir Maksimal<br>
-            ✅ 3 Box Turun Harga Jadi 261 Ribu (Rp.87.000/Box)<br>
-            ✅ Menjadi Customer Prioritas Kami<br>
-            ✅ Gratis 3 E-Book Kesehatan<br>
-            ✅ Garansi Produk 100%<br>
-            ✅ Bisa COD Seluruh Indonesia<br>
-            ✅ Layanan Konsultasi Kesehatan 24 Jam<br>
-            ✅ Pengiriman Lebih Cepat
-        </div>
-    </div>
-
-    <div id="form">
-        <div class="form-box">
-            <h2>Form Pemesanan</h2>
-
-            <div style="text-align: center;">
-                <p style="background: #FFA432; color: #000; font-weight: 780; font-size: 17px; padding: 2px;">
-                    PROMO HANYA HARI INI <br> BELI 3 BOX GRATIS 4 E-BOOK
-                </p>
-            </div>
-
-            <form class="loops-forms" id="orderForm">
-                <div class="loops-group">
-                    <label for="name" style="color: #000">Nama Anda<span class="red" style="color: #ff1b1b;">*</span></label>
-                    <input type="text" name="name" placeholder="Tulis nama Anda" required>
-                </div>
-
-                <div class="loops-group">
-                    <label for="phone" style="color: #000">No. WhatsApp<span class="red" style="color: #ff1b1b;">*</span></label>
-                    <input type="text" name="whatsapp" placeholder="isi nomor WA aktif Anda" required><br><br>
-                </div>
-
-                <div class="loops-group">
-                    <input type="submit" value="Beli + Ambil Promo" class="loops-submit btn-add-to-cart">
-                </div>
-            </form>
-
-            <!-- Status -->
-            <p id="loading" class="hidden">⏳ Sedang diproses...</p>
-            <p id="error" class="hidden"></p>
-            <p id="success" class="hidden"></p>
-
-            <!-- Tombol WA alternatif -->
-            <a id="altWhatsapp" href="<?= htmlspecialchars($LOOPS_WHATSAPP_URL) ?>"
-                class="hidden btn-promo buttons-pesan text-center">
-                <i class="fa-brands fa-whatsapp"></i> Hubungi via WhatsApp
-            </a>
-        </div>
-    </div>
-
-    <div id="backbtn" class="text-center" style="display: none; margin: 7px;">
-        <button class="btn btn-secondary" onclick="location.reload()">
-            <i class="fa fa-arrow-left"></i> Kembali ke Halaman
-        </button>
-    </div>
-
-    <center class="done-hide pembelian">
-        <h1>
-            <div class="title">Data Pembelian Hari Ini</div>
-        </h1>
-
-        <div id="purchase-list">
-            <div class="purchase-item"><span class="name">Tuti pomalingo</span><span class="package">Paket 3 Box</span><span class="time">4 Menit Lalu</span></div>
-            <div class="purchase-item"><span class="name">Afrilla sabtini</span><span class="package">Paket 3 Box</span><span class="time">4 Menit Lalu</span></div>
-            <div class="purchase-item"><span class="name">Mamah abig</span><span class="package">Paket 3 Box</span><span class="time">1 Menit Lalu</span></div>
-            <div class="purchase-item"><span class="name">Thania</span><span class="package">Paket 2 Box</span><span class="time">2 Menit Lalu</span></div>
-            <div class="purchase-item"><span class="name">Totok Budiyono</span><span class="package">Paket 2 Box</span><span class="time">3 Menit Lalu</span></div>
-        </div>
-    </center>
-
     <script>
-        const purchaseData = [
-            { name: "Mamah abig", package: "Paket 3 Box", purchaseTime: "1 Menit Lalu" },
-            { name: "Thania", package: "Paket 2 Box", purchaseTime: "2 Menit Lalu" },
-            { name: "Totok Budiyono", package: "Paket 2 Box", purchaseTime: "3 Menit Lalu" },
-            { name: "ricky kurniawan", package: "Paket 3 Box", purchaseTime: "1 Menit Lalu" },
-            { name: "DYAMSURIANI", package: "Paket 2 Box", purchaseTime: "2 Menit Lalu" },
-            { name: "Rusmiyati", package: "Paket 2 Box", purchaseTime: "1 Menit Lalu" },
-            { name: "Fitri nuryanti", package: "Paket 3 Box", purchaseTime: "4 Menit Lalu" },
-            { name: "Gilang deasy", package: "Paket 3 Box", purchaseTime: "2 Menit Lalu" },
-            { name: "Abdul Rahman", package: "Paket 2 Box", purchaseTime: "3 Menit Lalu" },
-            { name: "Bayu Nugroho", package: "Paket 3 Box", purchaseTime: "1 Menit Lalu" },
-            { name: "Sari Kusuma", package: "Paket 2 Box", purchaseTime: "2 Menit Lalu" },
-            { name: "Fajar Wicaksono raharjo", package: "Paket 5 Box", purchaseTime: "1 Menit Lalu" },
-            { name: "Tuti pomalingo", package: "Paket 3 Box", purchaseTime: "4 Menit Lalu" },
-            { name: "Afrilla sabtini", package: "Paket 3 Box", purchaseTime: "4 Menit Lalu" }
-        ];
-
-        let currentIndex = 0;
-
-        function updatePurchases() {
-            const purchaseList = document.getElementById("purchase-list");
-            if (!purchaseList) return;
-
-            purchaseList.innerHTML = "";
-
-            for (let i = 0; i < 5; i++) {
-                const data = purchaseData[(currentIndex + i) % purchaseData.length];
-                const item = document.createElement("div");
-                item.className = "purchase-item";
-
-                const name = document.createElement("span");
-                name.className = "name";
-                name.textContent = data.name;
-
-                const packageName = document.createElement("span");
-                packageName.className = "package";
-                packageName.textContent = data.package;
-
-                const time = document.createElement("span");
-                time.className = "time";
-                time.textContent = data.purchaseTime;
-
-                item.appendChild(name);
-                item.appendChild(packageName);
-                item.appendChild(time);
-                purchaseList.appendChild(item);
-            }
-
-            currentIndex = (currentIndex + 1) % purchaseData.length;
-        }
-
-        setInterval(updatePurchases, 1000);
-
-        function goToAlert() {
-            const alertEl = document.getElementById("alert");
-            if (alertEl) {
-                alertEl.scrollIntoView({ behavior: "smooth", block: "start" });
-            }
-        }
-
-        function floatingButton() {
-            const main = document.getElementById("main-container");
-            const floatingText = document.getElementById("floating-text");
-            const form = document.getElementById("form");
-            const backBtn = document.getElementById("backbtn");
-
-            if (main) main.style.display = "none";
-            if (floatingText) floatingText.style.display = "block";
-            if (form) form.style.display = "block";
-            if (backBtn) backBtn.style.display = "block";
-        }
-
-        // Slider sederhana
         (function () {
             const slides = document.querySelectorAll("#simpleSlider .slide");
             if (!slides.length) return;
@@ -325,15 +158,6 @@ $_EVENT_ID = md5($_V_IP . strtotime(date("Y-m-d H:i:s")));
             }, 3000);
         })();
     </script>
-
-    <script src="assets/script/jquery-3.6.0.min.js"></script>
-    <script src="assets/script/jquery.lazyload.min.js"></script>
-    <script src="assets/script/toasts-notification.js"></script>
-    <script src="assets/script/slideshow.js"></script>
-    <script src="assets/script/carousel.js"></script>
-    <script src="assets/script/counter-titik.js"></script>
-    <script src="assets/script/counter.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 </body>
 </html>
