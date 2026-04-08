@@ -40,13 +40,13 @@ $_EVENT_ID = md5($_V_IP . strtotime(date("Y-m-d H:i:s")));
 
         .simple-slider {
             position: relative;
+            display: grid;
             width: 100%;
             overflow: hidden;
         }
 
         .simple-slider .slide {
-            position: absolute;
-            inset: 0;
+            grid-area: 1 / 1;
             opacity: 0;
             transition: opacity 0.6s ease;
             pointer-events: none;
@@ -54,7 +54,6 @@ $_EVENT_ID = md5($_V_IP . strtotime(date("Y-m-d H:i:s")));
 
         .simple-slider .slide.active {
             opacity: 1;
-            position: relative;
             pointer-events: auto;
         }
 
