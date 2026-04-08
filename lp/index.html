@@ -7,20 +7,37 @@ $_EVENT_ID = md5($_V_IP . strtotime(date("Y-m-d H:i:s")));
 ?>
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Distributor Etawalin Resmi</title>
-
     <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
-    <link rel="stylesheet" href="assets/style.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #fff;
+        }
+
+        .section {
+            width: 100%;
+        }
+
+        .img-container {
+            width: 100%;
+        }
+
+        .img-container img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
         .simple-slider {
             position: relative;
             width: 100%;
@@ -28,29 +45,31 @@ $_EVENT_ID = md5($_V_IP . strtotime(date("Y-m-d H:i:s")));
         }
 
         .simple-slider .slide {
-            display: none;
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            transition: opacity 0.6s ease;
+            pointer-events: none;
         }
 
         .simple-slider .slide.active {
-            display: block;
+            opacity: 1;
+            position: relative;
+            pointer-events: auto;
         }
 
-        .simple-slider img,
-        .img-container img {
+        .simple-slider .slide img {
             width: 100%;
             height: auto;
             display: block;
         }
     </style>
 
-    <!-- Meta Pixel -->
     <script>
         !function (f, b, e, v, n, t, s) {
             if (f.fbq) return;
             n = f.fbq = function () {
-                n.callMethod
-                    ? n.callMethod.apply(n, arguments)
-                    : n.queue.push(arguments)
+                n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments)
             };
             if (!f._fbq) f._fbq = n;
             n.push = n;
@@ -61,72 +80,48 @@ $_EVENT_ID = md5($_V_IP . strtotime(date("Y-m-d H:i:s")));
             t.async = true;
             t.src = v;
             s = b.getElementsByTagName(e)[0];
-            s.parentNode.insertBefore(t, s)
+            s.parentNode.insertBefore(t, s);
         }(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
     </script>
 
     <?php if (!empty($META_PIXEL_ID)): ?>
-        <script>
-            function fireBaseTracking() {
-                if (typeof fbq !== 'function') return;
-
-                fbq('init', '<?php echo $META_PIXEL_ID; ?>');
-
-                try {
-                    fbq('track', 'PageView', {}, {
-                        eventID: "ePV-<?php echo $_EVENT_ID; ?>"
-                    });
-
-                    fbq('track', 'ViewContent', {
-                        content_name: 'Landing Page Etawalin',
-                        content_category: 'Page Content'
-                    }, {
-                        eventID: "eVC-<?php echo $_EVENT_ID; ?>"
-                    });
-                } catch (e) { }
-            }
-
-            if (typeof fbq === 'function') {
-                fireBaseTracking();
-            } else {
-                window.addEventListener('load', function () {
-                    fireBaseTracking();
-                });
-            }
-        </script>
-    <?php endif; ?>
-
-    <!-- Config tracking untuk client -->
     <script>
-        window._TRACKING = {
-            enabledClientPixel: <?php echo !empty($TRACKING['enable_client_pixel']) && $TRACKING['enable_client_pixel'] ? 'true' : 'false'; ?>,
-            enabledCapi: <?php echo !empty($TRACKING['enable_capi']) && $TRACKING['enable_capi'] ? 'true' : 'false'; ?>,
-            eventViewContent: 'ViewContent',
-            eventPageView: 'PageView',
-            eventId: '<?php echo addslashes($_EVENT_ID); ?>',
-            pixelId: '<?php echo addslashes($META_PIXEL_ID); ?>'
-        };
+        function fireBaseTracking() {
+            if (typeof fbq !== 'function') return;
+
+            fbq('init', '<?php echo $META_PIXEL_ID; ?>');
+
+            try {
+                fbq('track', 'PageView', {}, {
+                    eventID: "ePV-<?php echo $_EVENT_ID; ?>"
+                });
+
+                fbq('track', 'ViewContent', {
+                    content_name: 'Landing Page Etawalin',
+                    content_category: 'Page Content'
+                }, {
+                    eventID: "eVC-<?php echo $_EVENT_ID; ?>"
+                });
+            } catch (e) {}
+        }
+
+        window.addEventListener('load', fireBaseTracking);
     </script>
-
-    <script src="assets/app.js" defer></script>
+    <?php endif; ?>
 </head>
-
 <body>
 
     <div id="main-container" class="section">
         <section>
 
-            <!-- Gambar 1 -->
             <div class="img-container">
                 <img src="asset/img/header.webp" alt="Header">
             </div>
 
-            <!-- Gambar 2 -->
             <div class="img-container">
                 <img src="asset/img/bpom.webp" alt="BPOM">
             </div>
 
-            <!-- 1 Slider Gambar -->
             <div class="img-container">
                 <div class="simple-slider" id="simpleSlider">
                     <div class="slide active">
@@ -145,18 +140,18 @@ $_EVENT_ID = md5($_V_IP . strtotime(date("Y-m-d H:i:s")));
     </div>
 
     <script>
-        (function () {
-            const slides = document.querySelectorAll("#simpleSlider .slide");
-            if (!slides.length) return;
+        document.addEventListener('DOMContentLoaded', function () {
+            const slides = document.querySelectorAll('#simpleSlider .slide');
+            if (slides.length < 2) return;
 
             let activeIndex = 0;
 
-            setInterval(() => {
-                slides[activeIndex].classList.remove("active");
+            setInterval(function () {
+                slides[activeIndex].classList.remove('active');
                 activeIndex = (activeIndex + 1) % slides.length;
-                slides[activeIndex].classList.add("active");
+                slides[activeIndex].classList.add('active');
             }, 3000);
-        })();
+        });
     </script>
 
 </body>
