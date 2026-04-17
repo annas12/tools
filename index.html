@@ -63,7 +63,7 @@
 
     <!-- Keyword Controls -->
     <div id="keywordControls" class="bg-dark-card rounded-xl border border-dark-border p-6 mb-8 hidden">
-      <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
         <div class="md:col-span-2">
           <label class="block text-sm font-medium text-gray-300 mb-2">Keyword</label>
           <input type="text" id="keywordInput" placeholder="example: minecraft, chicken recipe, ai tools" class="w-full bg-dark-bg border border-dark-border rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-youtube focus:border-transparent">
@@ -75,15 +75,6 @@
             <option value="ID">🇮🇩 Indonesia</option><option value="US">🇺🇸 United States</option>
             <option value="JP">🇯🇵 Japan</option><option value="KR">🇰🇷 South Korea</option>
             <option value="GB">🇬🇧 United Kingdom</option><option value="IN">🇮🇳 India</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-300 mb-2">Time Range</label>
-          <select id="keywordTimeSelect" class="w-full bg-dark-bg border border-dark-border rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-youtube focus:border-transparent">
-            <option value="3">Last 3 days</option>
-            <option value="7" selected>Last 7 days</option>
-            <option value="14">Last 14 days</option>
-            <option value="30">Last 30 days</option>
           </select>
         </div>
         <div>
@@ -352,7 +343,6 @@
 
   const keywordInput = document.getElementById('keywordInput');
   const keywordRegionSelect = document.getElementById('keywordRegionSelect');
-  const keywordTimeSelect = document.getElementById('keywordTimeSelect');
   const openKeywordFilterBtn = document.getElementById('openKeywordFilterBtn');
   const keywordFilterSummary = document.getElementById('keywordFilterSummary');
   const analyzeKeywordBtn = document.getElementById('analyzeKeywordBtn');
@@ -486,17 +476,21 @@
     const snippet = video?.snippet || {};
     const contentDetails = video?.contentDetails || {};
     const status = video?.status || {};
+    const player = video?.player || {};
     if(feature==='live') return snippet.liveBroadcastContent === 'live';
-    if(feature==='4k') return contentDetails.definition === 'hd' && Number(video?.player?.embedWidth || 0) >= 3840;
+    if(feature==='4k'){
+      const html = player.embedHtml || '';
+      return /3840|2160|4k/i.test(html);
+    }
     if(feature==='hd') return contentDetails.definition === 'hd';
     if(feature==='subtitles') return contentDetails.caption === 'true';
     if(feature==='creativeCommon') return status.license === 'creativeCommon';
     if(feature==='360') return contentDetails.projection === '360';
     if(feature==='vr180') return contentDetails.projection === 'mesh';
     if(feature==='3d') return contentDetails.dimension === '3d';
-    if(feature==='hdr') return (contentDetails?.hasCustomThumbnail && contentDetails.definition === 'hd') || false;
+    if(feature==='hdr') return /hdr/i.test(player.embedHtml || '');
     if(feature==='location') return Boolean(video?.recordingDetails?.location);
-    if(feature==='purchased') return status.madeForKids === false && status.privacyStatus === 'public';
+    if(feature==='purchased') return status.privacyStatus === 'public' && Boolean(video?.paidProductPlacementDetails);
     return true;
   }
   function matchesDuration(video, duration){
@@ -547,6 +541,43 @@
       filtered.sort((a,b)=> (parseInt(b?.statistics?.viewCount||'0',10) - parseInt(a?.statistics?.viewCount||'0',10)));
     }
     return filtered;
+  }
+  function mapUploadedAtToPublishedAfter(uploadedAt){
+    if(!uploadedAt) return '';
+    const now = new Date();
+    const map = { today: 1, week: 7, month: 31, year: 366 };
+    const days = map[uploadedAt] || 0;
+    if(!days) return '';
+    const after = new Date(now.getTime() - (days * 86400000));
+    return after.toISOString();
+  }
+  function mapFeatureToApiParams(feature){
+    if(!feature) return {};
+    if(feature==='live') return { eventType: 'live' };
+    if(feature==='4k') return { videoDefinition: 'high' };
+    if(feature==='hd') return { videoDefinition: 'high' };
+    if(feature==='subtitles') return { videoCaption: 'closedCaption' };
+    if(feature==='creativeCommon') return { videoLicense: 'creativeCommon' };
+    if(feature==='360') return { videoType: 'any' };
+    if(feature==='vr180') return { videoType: 'any' };
+    if(feature==='3d') return { videoDimension: '3d' };
+    if(feature==='hdr') return { videoType: 'any' };
+    if(feature==='location') return { videoType: 'any' };
+    if(feature==='purchased') return { videoType: 'any' };
+    return {};
+  }
+  function buildKeywordApiParams(keyword, region){
+    const params = { q: keyword, region };
+    if(keywordFilters.duration) params.videoDuration = keywordFilters.duration;
+    if(keywordFilters.type === 'channel') params.type = 'channel';
+    else if(keywordFilters.type === 'playlist') params.type = 'playlist';
+    else params.type = 'video';
+    if(keywordFilters.type === 'short') params.videoDuration = 'short';
+    if(keywordFilters.sort === 'views') params.order = 'viewCount';
+    const publishedAfter = mapUploadedAtToPublishedAfter(keywordFilters.uploadedAt);
+    if(publishedAfter) params.publishedAfter = publishedAfter;
+    Object.assign(params, mapFeatureToApiParams(keywordFilters.feature));
+    return params;
   }
 
   async function apiFetch(path, params={}){
@@ -940,19 +971,18 @@
   async function fetchTrendingByKeyword(){
     const keyword = keywordInput.value.trim();
     const region = keywordRegionSelect.value;
-    const days = parseInt(keywordTimeSelect.value,10);
     if(!keyword){ showMessage('error','Please enter a keyword first.'); return; }
 
     setKeywordLoading(true);
     try{
-      const data = await apiFetch('/api/keyword', { q: keyword, region, days });
-      if(!data.items || !data.items.length) throw new Error('No results for this keyword in the selected time range.');
+      const data = await apiFetch('/api/keyword', buildKeywordApiParams(keyword, region));
+      if(!data.items || !data.items.length) throw new Error('No results for this keyword with the selected filters.');
 
       const embeddableItems = applyKeywordFiltersToVideos(data.items.filter(v=>isEmbeddable(v, region)));
       if(!embeddableItems.length) throw new Error('Results found, but no videos are embeddable in this region.');
 
       displayResults(embeddableItems,'keyword');
-      showMessage('success',`Found ${embeddableItems.length} trending videos for keyword "${keyword}" in ${region}.`);
+      showMessage('success',`Found ${embeddableItems.length} videos for keyword "${keyword}" in ${region} based on active filters.`);
     }catch(err){
       console.error(err);
       let m = err.message||'Error';
@@ -996,7 +1026,7 @@
   [regionSelect,categorySelect,maxResults].forEach(el=>{
     el.addEventListener('keypress',e=>{ if(e.key==='Enter' && currentMode==='trending') fetchTrendingVideos(); });
   });
-  [keywordInput,keywordRegionSelect,keywordTimeSelect].forEach(el=>{
+  [keywordInput,keywordRegionSelect].forEach(el=>{
     el.addEventListener('keypress',e=>{ if(e.key==='Enter' && currentMode==='keyword') fetchTrendingByKeyword(); });
   });
   [channelUrlInput].forEach(el=>{
