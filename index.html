@@ -502,9 +502,20 @@
     if(duration==='long') return sec > 1200;
     return true;
   }
+  function isLikelyShort(video){
+    const sec = durationSeconds(video?.contentDetails?.duration || '');
+    const title = (video?.snippet?.title || '').toLowerCase();
+    const description = (video?.snippet?.description || '').toLowerCase();
+    const tags = (video?.snippet?.tags || []).join(' ').toLowerCase();
+    const hasShortMarker = title.includes('#shorts') || description.includes('#shorts') || tags.includes('shorts');
+    if(hasShortMarker) return true;
+    if(sec > 0 && sec <= 180) return true;
+    return false;
+  }
   function matchesType(video, type){
-    if(!type || type==='video') return true;
-    if(type==='short') return matchesDuration(video,'short');
+    if(!type) return true;
+    if(type==='video') return !isLikelyShort(video);
+    if(type==='short') return isLikelyShort(video);
     if(type==='channel' || type==='playlist' || type==='movie') return false;
     return true;
   }
